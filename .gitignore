@@ -1,0 +1,9 @@
+*.js
+node_modules
+.idea
+.env
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+cdk.context.json
