@@ -1,0 +1,22 @@
+{
+  "name": "zoneminder-aws",
+  "version": "1.0.0",
+  "description": "zoneminder on aws",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "synth": "tsc && cdk synth",
+    "deploy": "tsc && cdk deploy",
+    "destroy": "tsc && cdk destroy"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-cdk/aws-ec2": "^1.3.0",
+    "@aws-cdk/aws-elasticloadbalancingv2": "^1.3.0",
+    "@aws-cdk/aws-route53": "^1.3.0",
+    "@aws-cdk/core": "^1.3.0",
+    "aws-cdk": "^1.3.0"
+  }
+}
