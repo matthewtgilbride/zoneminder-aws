@@ -4,6 +4,7 @@ import {
   ApplicationLoadBalancer,
   ApplicationProtocol,
   ApplicationTargetGroup,
+  CfnListener,
   InstanceTarget,
   SslPolicy,
   TargetType
@@ -35,7 +36,6 @@ class ZoneminderStack extends Stack {
     })
 
     ec2SecurityGroup.addIngressRule(Peer.ipv4(`${process.env.LOCAL_IP}/32` || ''), Port.tcp(22))
-    ec2SecurityGroup.addIngressRule(loadBalancerSecurityGroup, Port.tcp(443))
     ec2SecurityGroup.addIngressRule(loadBalancerSecurityGroup, Port.tcp(80))
 
     // ec2 instance
@@ -65,13 +65,26 @@ class ZoneminderStack extends Stack {
       targets: [new InstanceTarget(ec2Instance.ref, 80)]
     })
 
-    const httpListener = loadBalancer.addListener('ZM-http-listener', {
+    new CfnListener(this, 'ZM-http-listener', {
+      loadBalancerArn: loadBalancer.loadBalancerArn,
       port: 80,
+      protocol: 'HTTP',
+      defaultActions: [{
+        type: 'redirect',
+        redirectConfig: {
+          statusCode: 'HTTP_301',
+          protocol: 'HTTPS',
+          host: '#{host}',
+          port: '443',
+          path: '/#{path}',
+          query: '#{query}'
+        }
+      }]
     })
-    httpListener.addTargetGroups('ZM-http-listener-tg', { targetGroups: [targetGroup]})
 
     const httpsListener = loadBalancer.addListener('ZM-https-listener', {
       port: 443,
+      protocol: ApplicationProtocol.HTTPS,
       sslPolicy: SslPolicy.RECOMMENDED,
       // TODO: generate the cert or use env var?
       certificateArns: [process.env.CERTIFICATE_ARN || '']
