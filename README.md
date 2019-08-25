@@ -24,3 +24,13 @@ Then, run the following:
 
 You should end up with a stack created, and be able to access Zoneminder at `https://<hostname>/zm`
 
+The FIRST thing you should do is log into the zoneminder console and manually configure the following options via the UI;
+
+*   <your-host>/zm/index.php?view=options
+    *   OPT_USE_AUTH turn on
+    *   AUTH_HASH_SECRET somesecretthinghere
+    *   AUTH_HASH_LOGINS turn on
+    
+*   <your-host>/zm/index.php?view=options&tab=users
+    *   delete the admin user and create your own super user
+

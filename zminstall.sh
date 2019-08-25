@@ -19,10 +19,6 @@ sudo apt-get dist-upgrade -y
 sudo rm /etc/mysql/my.cnf
 sudo cp /etc/mysql/mysql.conf.d/mysqld.cnf /etc/mysql/my.cnf
 
-# didn't work
-# nano /etc/mysql/my.cnf
-# ctrl+w [msqld]
-# ctrl+o. ctrl+x
 sudo sed -i '/\[mysqld\]/a sql_mode = NO_ENGINE_SUBSTITUTION' /etc/mysql/my.cnf
 
 sudo systemctl restart mysql
@@ -44,7 +40,6 @@ sudo systemctl enable zoneminder
 sudo systemctl start zoneminder
 
 sudo sed -i '/\[Date\]/a date.timezone = America/New_York' /etc/php/7.0/apache2/php.ini
+sudo timedatectl set-timezone America/New_York
 
 sudo systemctl reload apache2
-
-# in zoneminder ui config set AUTH_RELAY to none
