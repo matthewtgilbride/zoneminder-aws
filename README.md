@@ -5,11 +5,7 @@
 You'll need a few things set up in in your AWS account before you can get started.
 
 1.  An ssh keypair, in case you need to ssh into the EC2 instance for troubleshooting.
-2.  An AMI with Zoneminder pre-installed.
-    I created one by manually starting up a Ubuntu 16.04 AMI and running the commands
-    in [zminstall.sh](./zminstall.sh), and then saving the image.
-    [zminstall.sh](./zminstall.sh) just automates the the zoneminder installation
-    directions [here](https://zoneminder.readthedocs.io/en/stable/installationguide/ubuntu.html#easy-way-ubuntu-16-04).
+2.  An AMI with Zoneminder pre-installed (see below).
 3.  An ACM certificate for SSL.
 4.  A domain name and hosted zone set up in Route 53
 
@@ -28,9 +24,29 @@ The FIRST thing you should do is log into the zoneminder console and manually co
 
 *   <your-host>/zm/index.php?view=options
     *   OPT_USE_AUTH turn on
-    *   AUTH_HASH_SECRET somesecretthinghere
+    *   AUTH_HASH_SECRET less than 6 characters https://github.com/ZoneMinder/ZoneMinder/issues/1552
     *   AUTH_HASH_LOGINS turn on
+    *   If you are running zmeventserver...
+        *   OPT_USE_EVENTNOTIFICATION turn on
+        *   Restart zoneminder
     
 *   <your-host>/zm/index.php?view=options&tab=users
     *   delete the admin user and create your own super user
+    
+    
+### Creating a zoneminder AMI
+
+*   Just Zoneminder
+    *   Start up a Ubuntu 16.04 AMI
+    *   scp [zminstall.sh](./zminstall.sh) into the image, run it, and then save the image.
+        *   zminstall.sh just automates the the zoneminder installation directions
+            [here](https://zoneminder.readthedocs.io/en/stable/installationguide/ubuntu.html#easy-way-ubuntu-16-04).
+*   Zoneminder and [zmeventserver](https://github.com/pliablepixels/zmeventnotification)
+    *   Follow the above, then scp [zmeventserverinstall.sh](./zmeventserverinstall.sh) into the image, and run it.
+        *   zmeventserverinstall.sh just automates the installation directions
+            [here](https://zmeventnotification.readthedocs.io/en/latest/guides/install.html)
+    *   scp the [zmeventnotification](./zmeventnotification) directory into the image
+        *   this is just a clone of zmeventnotification, but with ssl turned off in zmeventnotification.ini
+        *   The AWS ALB takes care of SSL termination
+    *   run the provided [installation script](./zmeventnotification/install.sh)
 

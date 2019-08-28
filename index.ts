@@ -1,4 +1,4 @@
-import { App, Stack, StackProps } from '@aws-cdk/core';
+import { App, Duration, Stack, StackProps } from '@aws-cdk/core';
 import { CfnInstance, Peer, Port, SecurityGroup, Vpc } from "@aws-cdk/aws-ec2";
 import {
   ApplicationLoadBalancer,
@@ -25,8 +25,9 @@ class ZoneminderStack extends Stack {
     })
 
     loadBalancerSecurityGroup.addIngressRule(Peer.ipv4('0.0.0.0/0'), Port.tcp(443))
-    // TODO: forwarding 80 to 443?
     loadBalancerSecurityGroup.addIngressRule(Peer.ipv4('0.0.0.0/0'), Port.tcp(80))
+    loadBalancerSecurityGroup.addIngressRule(Peer.ipv4('0.0.0.0/0'), Port.tcp(9000))
+    // todo remove?
     loadBalancerSecurityGroup.addIngressRule(loadBalancerSecurityGroup, Port.allTraffic())
 
     // ec2 security group
@@ -37,6 +38,9 @@ class ZoneminderStack extends Stack {
 
     ec2SecurityGroup.addIngressRule(Peer.ipv4(`${process.env.LOCAL_IP}/32` || ''), Port.tcp(22))
     ec2SecurityGroup.addIngressRule(loadBalancerSecurityGroup, Port.tcp(80))
+    // todo change to loadbalancer security group
+    ec2SecurityGroup.addIngressRule(Peer.ipv4(`${process.env.LOCAL_IP}/32` || ''), Port.tcp(9000))
+    ec2SecurityGroup.addIngressRule(loadBalancerSecurityGroup, Port.tcp(9000))
 
     // ec2 instance
     const ec2Instance = new CfnInstance(this, 'ZM-ec2-instance', {
@@ -51,22 +55,15 @@ class ZoneminderStack extends Stack {
     })
 
     // ALB
-    const loadBalancer = new ApplicationLoadBalancer(this, 'ZM-lb', {
+    const alb = new ApplicationLoadBalancer(this, 'ZM-lb', {
       vpc,
       internetFacing: true,
       securityGroup: loadBalancerSecurityGroup,
     })
 
-    const targetGroup = new ApplicationTargetGroup(this, 'ZM-lb-tg', {
-      port: 80,
-      protocol: ApplicationProtocol.HTTP,
-      targetType: TargetType.INSTANCE,
-      vpc,
-      targets: [new InstanceTarget(ec2Instance.ref, 80)]
-    })
-
+    // redirect HTTP to HTTPS
     new CfnListener(this, 'ZM-http-listener', {
-      loadBalancerArn: loadBalancer.loadBalancerArn,
+      loadBalancerArn: alb.loadBalancerArn,
       port: 80,
       protocol: 'HTTP',
       defaultActions: [{
@@ -82,14 +79,39 @@ class ZoneminderStack extends Stack {
       }]
     })
 
-    const httpsListener = loadBalancer.addListener('ZM-https-listener', {
+    const httpsTargetGroup = new ApplicationTargetGroup(this, 'ZM-lb-tg', {
+      port: 80,
+      protocol: ApplicationProtocol.HTTP,
+      targetType: TargetType.INSTANCE,
+      vpc,
+      targets: [new InstanceTarget(ec2Instance.ref, 80)]
+    })
+
+    const httpsListener = alb.addListener('ZM-https-listener', {
       port: 443,
       protocol: ApplicationProtocol.HTTPS,
       sslPolicy: SslPolicy.RECOMMENDED,
       // TODO: generate the cert or use env var?
       certificateArns: [process.env.CERTIFICATE_ARN || '']
     })
-    httpsListener.addTargetGroups('ZM-http-listener-tg', { targetGroups: [targetGroup]})
+    httpsListener.addTargetGroups('ZM-http-listener-tg', { targetGroups: [httpsTargetGroup]})
+
+    const wsTargetGroup = new ApplicationTargetGroup(this, 'ZM-ws-tg', {
+      vpc,
+      protocol: ApplicationProtocol.HTTP,
+      port: 9000,
+      targetType: TargetType.INSTANCE,
+      targets: [new InstanceTarget(ec2Instance.ref, 9000)]
+    })
+
+    const wsListener = alb.addListener('ZM-ws-listener', {
+      port: 9000,
+      protocol: ApplicationProtocol.HTTPS,
+      sslPolicy: SslPolicy.RECOMMENDED,
+      // TODO: generate the cert or use env var?
+      certificateArns: [process.env.CERTIFICATE_ARN || '']
+    })
+    wsListener.addTargetGroups('ZM-ws-listener-tg', { targetGroups: [wsTargetGroup]})
 
     // Route 53
     new RecordSet(this, 'ZM-rs', {
@@ -101,7 +123,9 @@ class ZoneminderStack extends Stack {
       // TODO: env var?
       recordName: process.env.RECORD_NAME,
       recordType: RecordType.CNAME,
-      target: RecordTarget.fromValues(loadBalancer.loadBalancerDnsName)
+      // todo: make longer once stable
+      ttl: Duration.seconds(60),
+      target: RecordTarget.fromValues(alb.loadBalancerDnsName)
     })
 
   }
