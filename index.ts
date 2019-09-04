@@ -38,8 +38,6 @@ class ZoneminderStack extends Stack {
 
     ec2SecurityGroup.addIngressRule(Peer.ipv4(`${process.env.LOCAL_IP}/32` || ''), Port.tcp(22))
     ec2SecurityGroup.addIngressRule(loadBalancerSecurityGroup, Port.tcp(80))
-    // todo change to loadbalancer security group
-    ec2SecurityGroup.addIngressRule(Peer.ipv4(`${process.env.LOCAL_IP}/32` || ''), Port.tcp(9000))
     ec2SecurityGroup.addIngressRule(loadBalancerSecurityGroup, Port.tcp(9000))
 
     // ec2 instance
@@ -51,7 +49,7 @@ class ZoneminderStack extends Stack {
       // todo: env var
       keyName: process.env.SSH_KEYNAME,
       securityGroupIds: [ec2SecurityGroup.securityGroupId],
-      blockDeviceMappings: [{ deviceName: '/dev/sda1', ebs: { deleteOnTermination: false, encrypted: false, volumeSize: 100 }}]
+      blockDeviceMappings: [{ deviceName: '/dev/sda1', ebs: { deleteOnTermination: false, encrypted: false, volumeSize: 25 }}]
     })
 
     // ALB

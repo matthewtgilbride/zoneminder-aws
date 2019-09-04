@@ -11,4 +11,4 @@ sudo apt-get -y install libjson-perl
 
 sudo cpanm install LWP::Protocol::https
 
-sudo apt install python3-pip
+sudo apt-get -y install python3-pip

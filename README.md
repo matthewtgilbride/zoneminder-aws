@@ -38,15 +38,17 @@ The FIRST thing you should do is log into the zoneminder console and manually co
 
 *   Just Zoneminder
     *   Start up a Ubuntu 16.04 AMI
-    *   scp [zminstall.sh](./zminstall.sh) into the image, run it, and then save the image.
+    *   scp [zminstall.sh](./zminstall.sh) into the image: `scp zminstall.sh ubuntu@<image-ip>:`
+    *   ssh into the image: `sudo chmod a+x zminstall.sh`, then `sudo ./zminstall.sh`
         *   zminstall.sh just automates the the zoneminder installation directions
             [here](https://zoneminder.readthedocs.io/en/stable/installationguide/ubuntu.html#easy-way-ubuntu-16-04).
 *   Zoneminder and [zmeventserver](https://github.com/pliablepixels/zmeventnotification)
-    *   Follow the above, then scp [zmeventserverinstall.sh](./zmeventserverinstall.sh) into the image, and run it.
+    *   Repeat the procedure above for [zmeventserverinstall.sh](./zmeventserverinstall.sh).
         *   zmeventserverinstall.sh just automates the installation directions
             [here](https://zmeventnotification.readthedocs.io/en/latest/guides/install.html)
-    *   scp the [zmeventnotification](./zmeventnotification) directory into the image
+    *   scp the [zmeventnotification](./zmeventnotification) directory into the image (you will need the -r flag `scp -r`)
         *   this is just a clone of zmeventnotification, but with ssl turned off in zmeventnotification.ini
         *   The AWS ALB takes care of SSL termination
-    *   run the provided [installation script](./zmeventnotification/install.sh)
+    *   run the [installation script](./zmeventnotification/install.sh) provided: `cd zmeventnotification`, then `sudo ./install.sh`
+*   Save the image from the AWS console.
 
