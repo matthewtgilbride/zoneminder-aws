@@ -49,7 +49,7 @@ class ZoneminderStack extends Stack {
       // todo: env var
       keyName: process.env.SSH_KEYNAME,
       securityGroupIds: [ec2SecurityGroup.securityGroupId],
-      blockDeviceMappings: [{ deviceName: '/dev/sda1', ebs: { deleteOnTermination: false, encrypted: false, volumeSize: 25 }}]
+      blockDeviceMappings: [{ deviceName: '/dev/sda1', ebs: { deleteOnTermination: false, encrypted: false, volumeSize: 10 }}]
     })
 
     // ALB

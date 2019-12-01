@@ -21,6 +21,9 @@ sudo cp /etc/mysql/mysql.conf.d/mysqld.cnf /etc/mysql/my.cnf
 
 sudo sed -i '/\[mysqld\]/a sql_mode = NO_ENGINE_SUBSTITUTION' /etc/mysql/my.cnf
 
+# sets the mapped memory to 75% instead of 50% so zm can consume more memory
+sudo echo "tmpfs /dev/shm tmpfs defaults,noexec,nosuid,size=75% 0 0" >> /etc/fstab
+
 sudo systemctl restart mysql
 
 sudo apt-get install zoneminder -y
@@ -39,7 +42,31 @@ sudo a2enmod headers
 sudo systemctl enable zoneminder
 sudo systemctl start zoneminder
 
-sudo sed -i '/\[Date\]/a date.timezone = America/New_York' /etc/php/7.0/apache2/php.ini
+sudo sed -i '/\[Date\]/a date.timezone = America/New_York' /etc/php/7.2/apache2/php.ini
 sudo timedatectl set-timezone America/New_York
 
 sudo systemctl reload apache2
+
+# zmeventserver
+sudo apt-get install -y make gcc cpanminus
+
+sudo cpanm install Crypt::MySQL
+sudo cpanm install Config::IniFiles
+sudo cpanm install Crypt::Eksblowfish::Bcrypt
+
+sudo apt-get install -y libyaml-perl
+sudo cpanm install Net::WebSocket::Server
+
+sudo apt-get -y install libjson-perl
+
+sudo cpanm install LWP::Protocol::https
+
+sudo apt-get -y install python3-pip
+
+git clone https://github.com/pliablepixels/zmeventnotification.git
+
+cd zmeventnotification
+
+git fetch --tags
+
+git checkout v4.6.1
