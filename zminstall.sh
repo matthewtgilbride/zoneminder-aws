@@ -63,6 +63,10 @@ sudo cpanm install LWP::Protocol::https
 
 sudo apt-get -y install python3-pip
 
+sudo apt-get -y install python3-opencv
+
+sudo pip3 install future
+
 git clone https://github.com/pliablepixels/zmeventnotification.git
 
 cd zmeventnotification

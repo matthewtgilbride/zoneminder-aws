@@ -27,19 +27,15 @@ Before you can launch your stack on AWS, you'll need an EC2 AMI with Zoneminder 
             *   instead of checking out the most recent stable release,
                 it checks out v4.6.1, the stable release at time of writing this README.
             
-*   once the event server is installed, overwrite the configuration with the one in this project
+*   IF you are going to use zmeventserver:
 
-    *   scp the config file at the root of this project over the default one
+    *   scp the config files at the root of this into the image (we will use them later).
     
         `scp zmeventnotification.ini ubuntu@<image-ip>:`
         
-        `mv zmeventnotificationlini ./zmeventnotification`  
+        `scp objectconfig.ini ubuntu@<image-ip>:`
         
-        It has the following changes:
-        
-        *   SSL is turned off.  The AWS ALB takes care of SSL termination.
-        *   Logging is turned on
-        *   Machine learning hooks are turned on
+        *   You can diff these files against the zmeventserver github repo if you are curious as to the changes.
         
 *   Save the image from the AWS console.
 
@@ -83,18 +79,27 @@ The FIRST thing you should do is log into the zoneminder console and manually co
     
 ## Configuring zm event server
 
-*   override `zmeventnotification/secrets.ini` with your values.
+*   override `zmeventnotification/secrets.ini` with your values (url, username, password, etc.).
+    *   use "snapshot" at the end of ZMES_PICTURE_URL to match `objectconfig.ini`
 
-*   move zmeventnotification.ini into the zmeventserver directory
+*   move zmeventnotification.ini into and objectconfig.ini into corresponding zmeventserver directories
 
     `sudo mv zmeventnotification.ini zmeventnotification`
     
+    `sudo mv objectconfig.ini zmeventnotification/hook`
+    
 *   run the [event server installation script](./zmeventnotification/install.sh) provided:
     
-        `cd zmeventnotification && sudo ./install.sh`
+    `cd zmeventnotification && sudo ./install.sh`
 
 *   Manually upate zoneminder via the UI
     *   OPT_USE_EVENTNOTIFICATION turn on
     *   Restart zoneminder
     
-        
+**Note, in my case, I also save an AMI after this step**
+
+## Monitor configuration notes (for the author, but might help you too)
+*  Source Path: rtsp://<host>:8554/11 and rtsp://<host>:9554/11
+*  Buffers: 30, 5, 10, 100, 0, 3
+*  Resolution: 1920 x 1080
+*  Zones: Best, high sensitivity, pixel threshold 35, decrease mins

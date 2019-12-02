@@ -44,7 +44,7 @@ class ZoneminderStack extends Stack {
     const ec2Instance = new CfnInstance(this, 'ZM-ec2-instance', {
       // todo: build from ubuntu 16.04? via the zminstall.sh script?
       imageId: process.env.ZONEMINDER_AMI,
-      instanceType: 't3a.small',
+      instanceType: 't3a.medium',
       availabilityZone: 'us-east-1b',
       // todo: env var
       keyName: process.env.SSH_KEYNAME,
