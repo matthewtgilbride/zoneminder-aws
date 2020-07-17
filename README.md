@@ -24,7 +24,7 @@ Before you can launch your stack on AWS, you'll need an EC2 AMI with Zoneminder 
         * zmeventserver installation directions
         [here](https://zmeventnotification.readthedocs.io/en/latest/guides/install.html)
         
-            *   instead of checking out the most recent stable release,
+            *   **NOTE: not in this branch!** instead of checking out the most recent stable release,
                 it checks out v4.6.1, the stable release at time of writing this README.
             
 *   IF you are going to use zmeventserver:
@@ -34,6 +34,8 @@ Before you can launch your stack on AWS, you'll need an EC2 AMI with Zoneminder 
         `scp zmeventnotification.ini ubuntu@<image-ip>:`
         
         `scp objectconfig.ini ubuntu@<image-ip>:`
+        
+        `scp secrets.ini ubuntu@<image-ip>:` **This file is gitignored because you should include your own!**
         
         *   You can diff these files against the zmeventserver github repo if you are curious as to the changes.
         
@@ -74,6 +76,7 @@ The FIRST thing you should do is log into the zoneminder console and manually co
     *   OPT_USE_AUTH turn on
     *   AUTH_HASH_SECRET less than 6 characters https://github.com/ZoneMinder/ZoneMinder/issues/1552
     *   AUTH_HASH_LOGINS turn on
+    *   Set timezone accordingly
     
 **Note, in my case, I save another AMI after I've performed these steps as well as configuring a couple of monitors**
     
@@ -88,6 +91,8 @@ The FIRST thing you should do is log into the zoneminder console and manually co
     
     `sudo mv objectconfig.ini zmeventnotification/hook`
     
+    `sudo mv secrets.ini zmeventnotification/hook`
+    
 *   run the [event server installation script](./zmeventnotification/install.sh) provided:
     
     `cd zmeventnotification && sudo ./install.sh`
@@ -100,6 +105,6 @@ The FIRST thing you should do is log into the zoneminder console and manually co
 
 ## Monitor configuration notes (for the author, but might help you too)
 *  Source Path: rtsp://<host>:8554/11 and rtsp://<host>:9554/11
-*  Buffers: 30, 5, 10, 100, 0, 3
+*  Buffers: 25, 0, 10, 100, 0, 1
 *  Resolution: 1920 x 1080
-*  Zones: Best, high sensitivity, pixel threshold 35, decrease mins
+*  Zones: Best, high sensitivity, pixel threshold 35, decrease mins to 1
