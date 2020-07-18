@@ -75,6 +75,7 @@ const createMonitor = async (token: string, name: string, path: string) => {
   }
 }
 
+// @ts-ignore
 const createZone = async (token: string, monitor: string, name: string, coords: string) => {
   const val =   (key: string, value: string) => ({ [`Zone[${key}]`]: value })
 
