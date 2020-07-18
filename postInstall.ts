@@ -132,8 +132,8 @@ rl.question('ZM User: ', user => {
       await createMonitor(token, 'Front', 'rtsp://camera.zoneminder.mgilbride.com:8554/11')
       await createMonitor(token, 'Back', 'rtsp://camera.zoneminder.mgilbride.com:9554/11')
 
-      await createZone(token, 'Front', 'All', '463,689 1916,682 1919,1079 0,1079')
-      await createZone(token, 'Back', 'All', '0,0 1916,390 1919,1079 0,1079')
+      // await createZone(token, 'Front', 'All', '463,689 1916,682 1919,1079 0,1079')
+      // await createZone(token, 'Back', 'All', '0,0 1916,390 1919,1079 0,1079')
 
       await axios.post(
         `${URL}/states/change/restart.json?token=${token}`
