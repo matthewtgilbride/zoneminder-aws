@@ -1,0 +1,60 @@
+{
+  "zones": [
+    {
+      "Zone": {
+        "Id": "3",
+        "MonitorId": "3",
+        "Name": "All",
+        "Type": "Active",
+        "Units": "Percent",
+        "NumCoords": "4",
+        "Coords": "0,0 1916,390 1919,1079 0,1079",
+        "Area": "1694778",
+        "AlarmRGB": "16711680",
+        "CheckMethod": "Blobs",
+        "MinPixelThreshold": "25",
+        "MaxPixelThreshold": null,
+        "MinAlarmPixels": "50843",
+        "MaxAlarmPixels": "1271083",
+        "FilterX": "3",
+        "FilterY": "3",
+        "MinFilterPixels": "50843",
+        "MaxFilterPixels": "1271083",
+        "MinBlobPixels": "33895",
+        "MaxBlobPixels": null,
+        "MinBlobs": "1",
+        "MaxBlobs": null,
+        "OverloadFrames": "0",
+        "ExtendAlarmFrames": "0"
+      }
+    },
+    {
+      "Zone": {
+        "Id": "4",
+        "MonitorId": "4",
+        "Name": "All",
+        "Type": "Active",
+        "Units": "Percent",
+        "NumCoords": "4",
+        "Coords": "463,689 1916,682 1919,1079 0,1079",
+        "Area": "662636",
+        "AlarmRGB": "16711680",
+        "CheckMethod": "Blobs",
+        "MinPixelThreshold": "25",
+        "MaxPixelThreshold": null,
+        "MinAlarmPixels": "19879",
+        "MaxAlarmPixels": "496977",
+        "FilterX": "3",
+        "FilterY": "3",
+        "MinFilterPixels": "19879",
+        "MaxFilterPixels": "496977",
+        "MinBlobPixels": "13252",
+        "MaxBlobPixels": null,
+        "MinBlobs": "1",
+        "MaxBlobs": null,
+        "OverloadFrames": "0",
+        "ExtendAlarmFrames": "0"
+      }
+    }
+  ]
+}

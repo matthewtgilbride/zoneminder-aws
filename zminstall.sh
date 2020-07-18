@@ -9,8 +9,8 @@ sudo echo "mysql-server-5.7 mysql-server/root_password_again password root" | su
 
 sudo apt-get install lamp-server^ -y
 
-sudo add-apt-repository ppa:iconnor/zoneminder -y
-sudo add-apt-repository ppa:iconnor/zoneminder-master -y
+add-apt-repository ppa:iconnor/zoneminder-1.34 -y
+# sudo add-apt-repository ppa:iconnor/zoneminder-master -y
 
 sudo apt-get update
 sudo apt-get upgrade -y
@@ -71,6 +71,6 @@ git clone https://github.com/pliablepixels/zmeventnotification.git
 
 cd zmeventnotification
 
-# git fetch --tags
+git fetch --tags
 
-# git checkout v4.6.1
+git checkout $(git describe --tags $(git rev-list --tags --max-count=1))
