@@ -27,6 +27,7 @@ const getMonitors = async (token: string): Promise<any[]> => {
   }
 }
 
+// @ts-ignore
 const setConfig = async (token: string, key: string, value: string): Promise<void> => {
   try {
     await axios.put(
@@ -42,6 +43,7 @@ const setConfig = async (token: string, key: string, value: string): Promise<voi
   }
 }
 
+// @ts-ignore
 const createMonitor = async (token: string, name: string, path: string) => {
   const val =   (key: string, value: string) => ({ [`Monitor[${key}]`]: value })
 
@@ -123,15 +125,16 @@ const rl = createInterface({
 rl.question('ZM User: ', user => {
   rl.question('ZM Password: ', async password => {
     try {
-      const token = await getToken(user, password)
+      let token = await getToken(user, password)
       await setConfig(token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
       await setConfig(token, 'ZM_AUTH_HASH_SECRET', 'short')
       await setConfig(token, 'ZM_OPT_USE_AUTH', '1')
+      token = await getToken(user, password)
       await setConfig(token, 'ZM_AUTH_HASH_LOGINS', '1')
       await setConfig(token, 'ZM_TIMEZONE', 'America/New_York')
 
-      await createMonitor(token, 'Front', 'rtsp://camera.zoneminder.mgilbride.com:8554/11')
-      await createMonitor(token, 'Back', 'rtsp://camera.zoneminder.mgilbride.com:9554/11')
+      // await createMonitor(token, 'Front', 'rtsp://camera.zoneminder.mgilbride.com:8554/11')
+      // await createMonitor(token, 'Back', 'rtsp://camera.zoneminder.mgilbride.com:9554/11')
 
       // await createZone(token, 'Front', 'All', '463,689 1916,682 1919,1079 0,1079')
       // await createZone(token, 'Back', 'All', '0,0 1916,390 1919,1079 0,1079')

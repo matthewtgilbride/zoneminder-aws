@@ -67,6 +67,8 @@ sudo apt-get -y install python3-opencv
 
 sudo pip3 install future
 
+sudo -H pip3 install opencv-contrib-python
+
 git clone https://github.com/pliablepixels/zmeventnotification.git
 
 cd zmeventnotification
