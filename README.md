@@ -1,5 +1,17 @@
 # Running [Zoneminder](https://zoneminder.com/) on AWS
 
+## AWS Account prerequisites
+
+You'll need a few things set up in in your AWS account before you can get started.
+
+1.  An ssh keypair, in case you need to ssh into the EC2 instance for troubleshooting.
+2.  An AMI with Zoneminder pre-installed (see below).
+3.  An ACM certificate for SSL.
+4.  A domain name and hosted zone set up in Route 53
+
+Include those variables in a .env (see [.env-sample](./.env-sample)) file,
+and source it `. .env` to set the environment variables in your shell.
+
 ## Creating a zoneminder AMI
 
 Before you can launch your stack on AWS, you'll need an EC2 AMI with Zoneminder installed.
@@ -8,50 +20,35 @@ Before you can launch your stack on AWS, you'll need an EC2 AMI with Zoneminder 
 
     `ssh -i <path-to-your-ssh-key> ubuntu@<image-ip>`
     
-*   scp [zminstall.sh](scripts/zminstall.sh) into the image:
+*   Copy the files from this project into the instance
     
-    `scp zminstall.sh ubuntu@<image-ip>:`
+    `./copy_files`, enter your image IP or public host name
         
-*   ssh into the image and run the installation script: 
+*   Install Zoneminder 
         
-    `sudo chmod a+x zminstall.sh && sudo ./zminstall.sh`
+    *   `./install_zoneminder.sh`
         
-    *   zminstall.sh just automates the the following:
+    *   This just automates the following:
     
         * zoneminder installation directions
         [here](https://zoneminder.readthedocs.io/en/latest/installationguide/ubuntu.html#easy-way-ubuntu-18-04-bionic).
         
-        * zmeventserver installation directions
+        * installs other prerequisites for zmeventserver
         [here](https://zmeventnotification.readthedocs.io/en/latest/guides/install.html)
-        
-            *   **NOTE: not in this branch!** instead of checking out the most recent stable release,
-                it checks out v4.6.1, the stable release at time of writing this README.
             
 *   IF you are going to use zmeventserver:
 
-    *   scp the config files at the root of this into the image (we will use them later).
+    *   Look at the files in the `zmeventnotification` directory and tweak them to your liking
     
-        `scp zmeventnotification.ini ubuntu@<image-ip>:`
-        
-        `scp objectconfig.ini ubuntu@<image-ip>:`
-        
-        `scp secrets.ini ubuntu@<image-ip>:` **This file is gitignored because you should include your own!**
-        
+        *   create a `secrets.ini` file in that directory: **This file is gitignored because you should include your own!**
+            
         *   You can diff these files against the zmeventserver github repo if you are curious as to the changes.
+
+    *   `./install_zmeventserver.sh`
+        
+        
         
 *   Save the image from the AWS console.
-
-## AWS Account prerequisites
-
-You'll need a few things set up in in your AWS account before you can get started.
-
-1.  An ssh keypair, in case you need to ssh into the EC2 instance for troubleshooting.
-2.  An AMI with Zoneminder pre-installed (see above).
-3.  An ACM certificate for SSL.
-4.  A domain name and hosted zone set up in Route 53
-
-Include those variables in a .env (see [.env-sample](./.env-sample)) file,
-and source it `. .env` to set the environment variables in your shell.
 
 ## Creating the zoneminder stack
 
@@ -71,40 +68,16 @@ The FIRST thing you should do is log into the zoneminder console and manually co
 
     *   delete the admin user and create your own super user
     
-*   <your-host>/zm/index.php?view=options
+*   IF you are not going to use an automated script (see below): <your-host>/zm/index.php?view=options
 
     *   OPT_USE_AUTH turn on
     *   AUTH_HASH_SECRET less than 6 characters https://github.com/ZoneMinder/ZoneMinder/issues/1552
     *   AUTH_HASH_LOGINS turn on
     *   Set timezone accordingly
     
-**Note, in my case, I save another AMI after I've performed these steps as well as configuring a couple of monitors**
+## Automated settings, monitor, and zone setup
     
-## Configuring zm event server
+* I have a utility script that automates the process of configuration, monitor, and zone setup for me.
 
-*   override `zmeventnotification/secrets.ini` with your values (url, username, password, etc.).
-    *   use "snapshot" at the end of ZMES_PICTURE_URL to match `objectconfig.ini`
-
-*   move zmeventnotification.ini into and objectconfig.ini into corresponding zmeventserver directories
-
-    `sudo mv zmeventnotification.ini zmeventnotification`
-    
-    `sudo mv objectconfig.ini zmeventnotification/hook`
-    
-    `sudo mv secrets.ini zmeventnotification/hook`
-    
-*   run the [event server installation script](./zmeventnotification/install.sh) provided:
-    
-    `cd zmeventnotification && sudo ./install.sh`
-
-*   Manually upate zoneminder via the UI
-    *   OPT_USE_EVENTNOTIFICATION turn on
-    *   Restart zoneminder
-    
-**Note, in my case, I also save an AMI after this step**
-
-## Monitor configuration notes (for the author, but might help you too)
-*  Source Path: rtsp://<host>:8554/11 and rtsp://<host>:9554/11
-*  Buffers: 25, 0, 10, 100, 0, 1
-*  Resolution: 1920 x 1080
-*  Zones: Best, high sensitivity, pixel threshold 35, decrease mins to 1
+    *   Note that the config files it uses are quite specific to my setup, but you can use them as inspiration
+    *   To run: `npm run after-user-setup` and follow the prompts
