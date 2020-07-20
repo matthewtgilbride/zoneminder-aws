@@ -4,6 +4,7 @@ import { stringify } from 'querystring'
 import frontMonitor from './zm_reference_data/cameras/front/monitor.json'
 import backMonitor from './zm_reference_data/cameras/back/monitor.json'
 import frontZone from './zm_reference_data/cameras/front/zone.json'
+import backZone from './zm_reference_data/cameras/back/zone.json'
 
 const getToken = async (URL: string, user: string, password: string): Promise<string> => {
   try {
@@ -71,7 +72,7 @@ const createMonitor = async (URL: string, token: string, monitor: typeof frontMo
   }
 }
 
-// @ts-ignore
+
 const createZone = async (URL: string, token: string, monitor: typeof frontMonitor, zone: typeof frontZone) => {
   const val =   (key: string, value: any) => ({ [`Zone[${key}]`]: value })
 
@@ -85,7 +86,7 @@ const createZone = async (URL: string, token: string, monitor: typeof frontMonit
         ...result,
         ...val(key, value)
       }),
-      { MonitorId: found.Monitor.Id }
+      { ...val('MonitorId', found.Monitor.Id) }
     )
 
     await axios.post(
@@ -114,7 +115,8 @@ rl.question('ZM API URL: ', URL => {
       try {
         let token = await getToken(URL, user, password)
         await setConfig(URL,token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
-        await setConfig(URL, token, 'ZM_AUTH_HASH_SECRET', 'short')
+        const secret = Math.random().toString(36).substring(7);
+        await setConfig(URL, token, 'ZM_AUTH_HASH_SECRET', secret)
         await setConfig(URL, token, 'ZM_OPT_USE_AUTH', '1')
         token = await getToken(URL, user, password)
         await setConfig(URL, token, 'ZM_AUTH_HASH_LOGINS', '1')
@@ -124,8 +126,8 @@ rl.question('ZM API URL: ', URL => {
         await createMonitor(URL, token, frontMonitor)
         await createMonitor(URL, token, backMonitor)
 
-        // await createZone(URL, token, frontMonitor, frontZone)
-        // await createZone(token, 'Back', 'All', '0,0 1916,390 1919,1079 0,1079')
+        await createZone(URL, token, frontMonitor, frontZone)
+        await createZone(URL, token, backMonitor, backZone)
 
         await axios.post(
           `${URL}/states/change/restart.json?token=${token}`
