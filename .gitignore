@@ -8,4 +8,4 @@ node_modules
 cdk.out
 cdk.context.json
 
-secrets.ini
+zmeventnotification/secrets.ini

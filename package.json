@@ -9,7 +9,7 @@
     "synth": "tsc && cdk synth",
     "deploy": "tsc && cdk deploy",
     "destroy": "tsc && cdk destroy",
-    "post-install": "ts-node postInstall.ts"
+    "after-user-setup": "ts-node after-user-setup.ts"
   },
   "author": "",
   "license": "ISC",

@@ -8,7 +8,7 @@ Before you can launch your stack on AWS, you'll need an EC2 AMI with Zoneminder 
 
     `ssh -i <path-to-your-ssh-key> ubuntu@<image-ip>`
     
-*   scp [zminstall.sh](./zminstall.sh) into the image:
+*   scp [zminstall.sh](scripts/zminstall.sh) into the image:
     
     `scp zminstall.sh ubuntu@<image-ip>:`
         
