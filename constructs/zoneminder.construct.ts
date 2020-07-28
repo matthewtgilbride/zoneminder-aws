@@ -131,6 +131,16 @@ export class ZoneminderConstruct extends Construct {
       ttl: Duration.seconds(60),
       target: RecordTarget.fromValues(alb.loadBalancerDnsName)
     })
+
+    // cameras to local IP
+    new RecordSet(this, 'ZM-rs-cameras', {
+      zone,
+      recordName: `camera.zoneminder.${domainName}`,
+      recordType: RecordType.CNAME,
+      // todo: make longer once stable
+      ttl: Duration.seconds(60),
+      target: RecordTarget.fromIpAddresses(localIp)
+    })
   }
 
 }

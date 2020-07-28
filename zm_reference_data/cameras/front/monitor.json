@@ -18,7 +18,7 @@
   "Host": null,
   "Port": "",
   "SubPath": "",
-  "Path": "rtsp://camera.zoneminder.mgilbride.com:8554/11",
+  "Path": "rtsp://camera.zoneminder.mattgilbride.com:8554/11",
   "Options": null,
   "User": null,
   "Pass": null,

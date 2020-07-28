@@ -8,7 +8,7 @@ class ZoneminderStack extends Stack {
 
     new ZoneminderConstruct(this, 'zoneminder', {
       localIp: process.env.LOCAL_IP as string,
-      amiImageId: 'ami-0632c45200ed0fce6',
+      amiImageId: 'ami-064782daaed30eff8',
       sshKeyName: 'zoneminder-ami',
       ebsVolumeSize: 100
     })
