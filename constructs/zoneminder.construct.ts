@@ -1,5 +1,17 @@
 import { Construct, Duration } from "@aws-cdk/core";
-import { CfnInstance, Peer, Port, SecurityGroup, Vpc } from "@aws-cdk/aws-ec2";
+import {
+  BlockDeviceVolume,
+  Instance,
+  InstanceClass,
+  InstanceSize,
+  InstanceType,
+  MachineImage,
+  Peer,
+  Port,
+  SecurityGroup,
+  UserData,
+  Vpc
+} from "@aws-cdk/aws-ec2";
 import {
   ApplicationLoadBalancer,
   ApplicationProtocol,
@@ -11,6 +23,8 @@ import {
 } from "@aws-cdk/aws-elasticloadbalancingv2";
 import { HostedZone, RecordSet, RecordTarget, RecordType } from "@aws-cdk/aws-route53";
 import { StringParameter } from "@aws-cdk/aws-ssm";
+import { readFileSync } from "fs";
+import path from "path";
 
 export interface ZoneminderProps {
   localIp: string,
@@ -26,7 +40,7 @@ export class ZoneminderConstruct extends Construct {
     const domainName = StringParameter.valueFromLookup(this, 'domainName')
     const certificateArn = StringParameter.valueFromLookup(this, 'certificateArn');
 
-    const { localIp, amiImageId, sshKeyName, ebsVolumeSize } = props
+    const { localIp, sshKeyName, ebsVolumeSize } = props
 
     const vpc = Vpc.fromLookup(this, "ZM-vpc", { isDefault: true });
     const zone = HostedZone.fromLookup(this, `${id}-HostedZone`, {
@@ -55,14 +69,25 @@ export class ZoneminderConstruct extends Construct {
     ec2SecurityGroup.addIngressRule(loadBalancerSecurityGroup, Port.tcp(80))
     ec2SecurityGroup.addIngressRule(loadBalancerSecurityGroup, Port.tcp(9000))
 
+    const zmInstall = readFileSync(path.resolve(process.cwd(), 'zminstall.sh'), { encoding: 'utf-8' })
+    const secrets = readFileSync(path.resolve(process.cwd(), 'secrets.ini'), { encoding: 'utf-8' })
+    const userData = UserData.forLinux()
+
+    userData.addCommands(zmInstall)
+    userData.addCommands(`echo '${secrets}' > zmeventnotification/secrets.ini`)
+    userData.addCommands(`./zmeventnotification/install.sh --install-es --install-hook --install-config --no-interactive`)
+
     // ec2 instance
-    const ec2Instance = new CfnInstance(this, 'ZM-ec2-instance', {
-      imageId: amiImageId,
-      instanceType: 't3a.medium',
+    const ec2Instance = new Instance(this, 'ZM-ec2-instance', {
+      vpc,
+      userData,
+      // Ubuntu 18.04
+      machineImage: MachineImage.genericLinux({ 'us-east-1': 'ami-0ac80df6eff0e70b5' }),
+      instanceType: InstanceType.of(InstanceClass.T3A, InstanceSize.MEDIUM),
       availabilityZone: 'us-east-1b',
       keyName: sshKeyName,
-      securityGroupIds: [ec2SecurityGroup.securityGroupId],
-      blockDeviceMappings: [{ deviceName: '/dev/sda1', ebs: { deleteOnTermination: false, encrypted: false, volumeSize: ebsVolumeSize }}]
+      securityGroup: ec2SecurityGroup,
+      blockDevices: [{ deviceName: '/dev/sda1', volume: BlockDeviceVolume.ebs(ebsVolumeSize) }]
     })
 
     // ALB
@@ -95,7 +120,7 @@ export class ZoneminderConstruct extends Construct {
       protocol: ApplicationProtocol.HTTP,
       targetType: TargetType.INSTANCE,
       vpc,
-      targets: [new InstanceTarget(ec2Instance.ref, 80)]
+      targets: [new InstanceTarget(ec2Instance.instanceId, 80)]
     })
 
     const httpsListener = alb.addListener('ZM-https-listener', {
@@ -111,7 +136,7 @@ export class ZoneminderConstruct extends Construct {
       protocol: ApplicationProtocol.HTTP,
       port: 9000,
       targetType: TargetType.INSTANCE,
-      targets: [new InstanceTarget(ec2Instance.ref, 9000)]
+      targets: [new InstanceTarget(ec2Instance.instanceId, 9000)]
     })
 
     const wsListener = alb.addListener('ZM-ws-listener', {
