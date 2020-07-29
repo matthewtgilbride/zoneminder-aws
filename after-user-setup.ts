@@ -5,6 +5,9 @@ import frontMonitor from './zm_reference_data/cameras/front/monitor.json'
 import backMonitor from './zm_reference_data/cameras/back/monitor.json'
 import frontZone from './zm_reference_data/cameras/front/zone.json'
 import backZone from './zm_reference_data/cameras/back/zone.json'
+import { SSM } from "aws-sdk";
+import { promisify } from "util";
+import { exec } from "child_process";
 
 const getToken = async (URL: string, user: string, password: string): Promise<string> => {
   try {
@@ -46,7 +49,6 @@ const setConfig = async (URL: string, token: string, key: string, value: string)
   }
 }
 
-// @ts-ignore
 const createMonitor = async (URL: string, token: string, monitor: typeof frontMonitor) => {
   const val =   (key: string, value: any) => ({ [`Monitor[${key}]`]: value })
 
@@ -109,28 +111,49 @@ const rl = createInterface({
   output: process.stdout
 })
 
-rl.question('ZM API URL: ', URL => {
-  rl.question('ZM User: ', user => {
-    rl.question('ZM Password: ', async password => {
+rl.question('EC2 Hostname: ', host => {
+  rl.question('password: ', zmPassword => {
+    rl.question('debug event server? (y/n): ', async debug => {
       try {
-        let token = await getToken(URL, user, password)
-        await setConfig(URL,token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
+        const ssm = new SSM()
+
+        const zmUserParameter = await ssm.getParameter({ Name: 'zmUser' }).promise()
+        const zmUser = zmUserParameter.Parameter?.Value as string
+
+        const zmApiUrlParameter = await ssm.getParameter({ Name: 'zmApiUrl' }).promise()
+        const apiUrl = zmApiUrlParameter.Parameter?.Value as string
+
+        const domainNameParameter = await ssm.getParameter({ Name: 'domainName' }).promise()
+        const domainName = domainNameParameter.Parameter?.Value as string
+
+        const iniString = secretsIni({ domainName, zmUser, zmPassword })
+
+        const shell = promisify(exec)
+
+        await shell(`ssh ubuntu@${host} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
+
+        let token = await getToken(apiUrl, zmUser, zmPassword)
+        await setConfig(apiUrl,token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
         const secret = Math.random().toString(36).substring(7);
-        await setConfig(URL, token, 'ZM_AUTH_HASH_SECRET', secret)
-        await setConfig(URL, token, 'ZM_OPT_USE_AUTH', '1')
-        token = await getToken(URL, user, password)
-        await setConfig(URL, token, 'ZM_AUTH_HASH_LOGINS', '1')
-        await setConfig(URL, token, 'ZM_TIMEZONE', 'America/New_York')
+        await setConfig(apiUrl, token, 'ZM_AUTH_HASH_SECRET', secret)
+        await setConfig(apiUrl, token, 'ZM_OPT_USE_AUTH', '1')
+        token = await getToken(apiUrl, zmUser, zmPassword)
+        await setConfig(apiUrl, token, 'ZM_AUTH_HASH_LOGINS', '1')
+        await setConfig(apiUrl, token, 'ZM_TIMEZONE', 'America/New_York')
 
+        if (debug === 'y') {
+          await setConfig(apiUrl, token, 'ZM_LOG_DEBUG', '1')
+          await setConfig(apiUrl, token, 'ZM_LOG_DEBUG_TARGET', '_zmesdetect|_zmeventnotification')
+        }
 
-        await createMonitor(URL, token, frontMonitor)
-        await createMonitor(URL, token, backMonitor)
+        await createMonitor(apiUrl, token, frontMonitor)
+        await createMonitor(apiUrl, token, backMonitor)
 
-        await createZone(URL, token, frontMonitor, frontZone)
-        await createZone(URL, token, backMonitor, backZone)
+        await createZone(apiUrl, token, frontMonitor, frontZone)
+        await createZone(apiUrl, token, backMonitor, backZone)
 
         await axios.post(
-          `${URL}/states/change/restart.json?token=${token}`
+          `${apiUrl}/states/change/restart.json?token=${token}`
         )
       } catch (e) {
         console.error(e)
@@ -141,5 +164,24 @@ rl.question('ZM API URL: ', URL => {
     })
   })
 })
+
+interface SecretsIniProps {
+  domainName: string,
+  zmUser: string,
+  zmPassword: string,
+}
+
+function secretsIni({ domainName, zmUser, zmPassword }: SecretsIniProps) {
+
+  const portalUrl = `https://zoneminder.${domainName}/zm`
+
+  return `[secrets]
+ZMES_PICTURE_URL=${portalUrl}/index.php?view=image&eid=EVENTID&fid=objdetect&width=600
+ZM_USER=${zmUser}
+ZM_PASSWORD=${zmPassword}
+ZM_PORTAL=${portalUrl}
+ZM_API_PORTAL=${portalUrl}/api`
+
+}
 
 

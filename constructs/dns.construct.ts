@@ -1,19 +1,19 @@
 import { Construct, Duration } from "@aws-cdk/core";
 import { HostedZone, RecordSet, RecordTarget, RecordType } from "@aws-cdk/aws-route53";
-import { StringParameter } from "@aws-cdk/aws-ssm";
 import { ApplicationLoadBalancer } from "@aws-cdk/aws-elasticloadbalancingv2";
 
 export interface DnsConstructProps {
   alb: ApplicationLoadBalancer,
-  localIp: string
+  localIp: string,
+  domainName: string,
 }
 
 export class DnsConstruct extends Construct {
 
-  constructor(scope: Construct, id: string, { alb, localIp }: DnsConstructProps) {
+  constructor(scope: Construct, id: string, { alb, localIp, domainName }: DnsConstructProps) {
     super(scope, id);
 
-    const domainName = StringParameter.valueFromLookup(this, 'domainName')
+
     const zone = HostedZone.fromLookup(this, `${id}-HostedZone`, {
       domainName,
     })

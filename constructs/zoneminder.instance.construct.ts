@@ -12,27 +12,46 @@ import {
 } from "@aws-cdk/aws-ec2";
 import { readFileSync } from "fs";
 import path from "path";
+import { StringParameter } from "@aws-cdk/aws-ssm";
+import { Secret } from "@aws-cdk/aws-secretsmanager";
 
 interface ZoneminderInstanceProps {
   vpc: IVpc,
   ec2SecurityGroup: SecurityGroup,
   sshKeyName: string,
   ebsVolumeSize: number,
+  domainName: string,
+  zmUser: string,
 }
 
 export class ZoneminderInstanceConstruct extends Construct {
   public ec2Instance: Instance
 
-  constructor(scope: Construct, id: string, { vpc, ec2SecurityGroup, sshKeyName, ebsVolumeSize }: ZoneminderInstanceProps) {
+  constructor(scope: Construct, id: string, { vpc, ec2SecurityGroup, sshKeyName, ebsVolumeSize, domainName, zmUser }: ZoneminderInstanceProps) {
     super(scope, `${id}-ZoneminderInstanceConstruct`)
 
-    const zmInstall = readFileSync(path.resolve(process.cwd(), 'zminstall.sh'), { encoding: 'utf-8' })
-    const secrets = readFileSync(path.resolve(process.cwd(), 'secrets.ini'), { encoding: 'utf-8' })
-    const userData = UserData.forLinux()
+    new StringParameter(this, 'zmUser', {
+      parameterName: 'zmUser',
+      stringValue: zmUser
+    })
+    new StringParameter(this, 'zmApiUrl', {
+      parameterName: 'zmApiUrl',
+      stringValue: `https://zoneminder.${domainName}/zm/api`
+    })
 
+    new Secret(this, 'zmPassword', {
+      secretName: 'zmPassword',
+      generateSecretString: {
+        excludePunctuation: true
+      }
+    })
+
+    const zmInstall = readFileSync(path.resolve(process.cwd(), 'zminstall.sh'), { encoding: 'utf-8' })
+
+    const userData = UserData.forLinux()
+    userData.addCommands('git clone --single-branch --branch v5.15.6-matthewtgilbride https://github.com/matthewtgilbride/zmeventnotification.git')
     userData.addCommands(zmInstall)
-    userData.addCommands(`echo '${secrets}' > zmeventnotification/secrets.ini`)
-    userData.addCommands(`./zmeventnotification/install.sh --install-es --install-hook --install-config --no-interactive`)
+    userData.addCommands(`cd zmeventnotification && INSTALL_YOLOV3=no INSTALL_YOLOV4=no ./install.sh --install-es --install-hook --install-config --no-interactive`)
 
     // ec2 instance
     this.ec2Instance = new Instance(this, 'ZM-ec2-instance', {

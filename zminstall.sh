@@ -68,5 +68,3 @@ apt-get -y install python3-opencv
 pip3 install future
 
 pip3 install opencv-contrib-python
-
-git clone --single-branch --branch v5.15.6-matthewtgilbride https://github.com/matthewtgilbride/zmeventnotification.git
