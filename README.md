@@ -2,61 +2,32 @@
 
 ## AWS Account prerequisites
 
-You'll need a few things set up in in your AWS account before you can get started.
+You'll need a couple of things from your AWS account before you can get started.
 
-1.  An ssh keypair, in case you need to ssh into the EC2 instance for troubleshooting.
-2.  An AMI with Zoneminder pre-installed (see below).
-3.  An ACM certificate for SSL.
-4.  A domain name and hosted zone set up in Route 53
+1.  Pick an AWS region (where things will run), 
+2.  Your access key, secret key, and AWS account number
+3.  An ssh keypair, in case you need to ssh into the EC2 instance for troubleshooting.
+4.  The public IP address where your cameras live
 
 Include those variables in a .env (see [.env-sample](./.env-sample)) file,
 and source it `. .env` to set the environment variables in your shell.
 
-## Creating a zoneminder AMI
+Next, you'll need some things that I, personally, have set up in a [separate github project](https://github.com/matthewtgilbride/aws-infrastructure).
 
-Before you can launch your stack on AWS, you'll need an EC2 AMI with Zoneminder installed.
+1.  A domain name and hosted zone
+2.  A wildcard certificate e.g. `*.yourdomain.com`
 
-*   Start up a Ubuntu 18.04 AMI and make sure you can ssh into it:
+Create two values in AWS Systems Manager Parameter store called `domainName` and `certificateArn`, respectively.
 
-    `ssh -i <path-to-your-ssh-key> ubuntu@<image-ip>`
-    
-*   Copy the files from this project into the instance
-    
-    `./copy_files`, enter your image IP or public host name
-        
-*   Install Zoneminder 
-        
-    *   `./install_zoneminder.sh`
-        
-    *   This just automates the following:
-    
-        * zoneminder installation directions
-        [here](https://zoneminder.readthedocs.io/en/latest/installationguide/ubuntu.html#easy-way-ubuntu-18-04-bionic).
-        
-        * installs other prerequisites for zmeventserver
-        [here](https://zmeventnotification.readthedocs.io/en/latest/guides/install.html)
-            
-*   IF you are going to use zmeventserver:
-
-    *   Look at the files in the `zmeventnotification` directory and tweak them to your liking
-    
-        *   create a `secrets.ini` file in that directory: **This file is gitignored because you should include your own!**
-            
-        *   You can diff these files against the zmeventserver github repo if you are curious as to the changes.
-
-    *   `./install_zmeventserver.sh`
-        
-        
-        
-*   Save the image from the AWS console.
+This project will look those values up, and setup zoneminder to run at `https://zoneminder.yourdomain.com/zm`
 
 ## Creating the zoneminder stack
 
 Run the following at the root of the project:
 
-`npm install`
+`yarn`
 
-`npm run deploy`
+`yarn deploy`
 
 You should end up with a stack created, and be able to access Zoneminder at `https://<hostname>/zm`
 
@@ -80,4 +51,4 @@ The FIRST thing you should do is log into the zoneminder console and manually co
 * I have a utility script that automates the process of configuration, monitor, and zone setup for me.
 
     *   Note that the config files it uses are quite specific to my setup, but you can use them as inspiration
-    *   To run: `npm run after-user-setup` and follow the prompts
+    *   To run: `yarn post:deploy` and follow the prompts
