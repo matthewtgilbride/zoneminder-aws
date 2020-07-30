@@ -5,7 +5,7 @@ import frontMonitor from './zm_reference_data/cameras/front/monitor.json'
 import backMonitor from './zm_reference_data/cameras/back/monitor.json'
 import frontZone from './zm_reference_data/cameras/front/zone.json'
 import backZone from './zm_reference_data/cameras/back/zone.json'
-import { SSM } from "aws-sdk";
+import { SecretsManager, SSM } from "aws-sdk";
 import { promisify } from "util";
 import { exec } from "child_process";
 
@@ -112,56 +112,58 @@ const rl = createInterface({
 })
 
 rl.question('EC2 Hostname: ', host => {
-  rl.question('password: ', zmPassword => {
-    rl.question('debug event server? (y/n): ', async debug => {
-      try {
-        const ssm = new SSM()
+  rl.question('debug event server? (y/n): ', async debug => {
+    try {
+      const ssm = new SSM()
+      const secretsManager = new SecretsManager()
 
-        const zmUserParameter = await ssm.getParameter({ Name: 'zmUser' }).promise()
-        const zmUser = zmUserParameter.Parameter?.Value as string
+      const zmUserParameter = await ssm.getParameter({ Name: 'zmUser' }).promise()
+      const zmUser = zmUserParameter.Parameter?.Value as string
 
-        const zmApiUrlParameter = await ssm.getParameter({ Name: 'zmApiUrl' }).promise()
-        const apiUrl = zmApiUrlParameter.Parameter?.Value as string
+      const zmApiUrlParameter = await ssm.getParameter({ Name: 'zmApiUrl' }).promise()
+      const apiUrl = zmApiUrlParameter.Parameter?.Value as string
 
-        const domainNameParameter = await ssm.getParameter({ Name: 'domainName' }).promise()
-        const domainName = domainNameParameter.Parameter?.Value as string
+      const domainNameParameter = await ssm.getParameter({ Name: 'domainName' }).promise()
+      const domainName = domainNameParameter.Parameter?.Value as string
 
-        const iniString = secretsIni({ domainName, zmUser, zmPassword })
+      const zmPasswordSecret = await secretsManager.getSecretValue({ SecretId: 'zmPassword' }).promise()
+      const zmPassword = zmPasswordSecret.SecretString as string
 
-        const shell = promisify(exec)
+      const iniString = secretsIni({ domainName, zmUser, zmPassword })
 
-        await shell(`ssh ubuntu@${host} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
+      const shell = promisify(exec)
 
-        let token = await getToken(apiUrl, zmUser, zmPassword)
-        await setConfig(apiUrl,token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
-        const secret = Math.random().toString(36).substring(7);
-        await setConfig(apiUrl, token, 'ZM_AUTH_HASH_SECRET', secret)
-        await setConfig(apiUrl, token, 'ZM_OPT_USE_AUTH', '1')
-        token = await getToken(apiUrl, zmUser, zmPassword)
-        await setConfig(apiUrl, token, 'ZM_AUTH_HASH_LOGINS', '1')
-        await setConfig(apiUrl, token, 'ZM_TIMEZONE', 'America/New_York')
+      await shell(`ssh ubuntu@${host} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
 
-        if (debug === 'y') {
-          await setConfig(apiUrl, token, 'ZM_LOG_DEBUG', '1')
-          await setConfig(apiUrl, token, 'ZM_LOG_DEBUG_TARGET', '_zmesdetect|_zmeventnotification')
-        }
+      let token = await getToken(apiUrl, zmUser, zmPassword)
+      await setConfig(apiUrl,token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
+      const secret = Math.random().toString(36).substring(7);
+      await setConfig(apiUrl, token, 'ZM_AUTH_HASH_SECRET', secret)
+      await setConfig(apiUrl, token, 'ZM_OPT_USE_AUTH', '1')
+      token = await getToken(apiUrl, zmUser, zmPassword)
+      await setConfig(apiUrl, token, 'ZM_AUTH_HASH_LOGINS', '1')
+      await setConfig(apiUrl, token, 'ZM_TIMEZONE', 'America/New_York')
 
-        await createMonitor(apiUrl, token, frontMonitor)
-        await createMonitor(apiUrl, token, backMonitor)
-
-        await createZone(apiUrl, token, frontMonitor, frontZone)
-        await createZone(apiUrl, token, backMonitor, backZone)
-
-        await axios.post(
-          `${apiUrl}/states/change/restart.json?token=${token}`
-        )
-      } catch (e) {
-        console.error(e)
-        throw e
-      } finally {
-        rl.close()
+      if (debug === 'y') {
+        await setConfig(apiUrl, token, 'ZM_LOG_DEBUG', '1')
+        await setConfig(apiUrl, token, 'ZM_LOG_DEBUG_TARGET', '_zmesdetect|_zmeventnotification')
       }
-    })
+
+      await createMonitor(apiUrl, token, frontMonitor)
+      await createMonitor(apiUrl, token, backMonitor)
+
+      await createZone(apiUrl, token, frontMonitor, frontZone)
+      await createZone(apiUrl, token, backMonitor, backZone)
+
+      await axios.post(
+        `${apiUrl}/states/change/restart.json?token=${token}`
+      )
+    } catch (e) {
+      console.error(e)
+      throw e
+    } finally {
+      rl.close()
+    }
   })
 })
 
