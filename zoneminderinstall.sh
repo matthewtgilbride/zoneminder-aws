@@ -47,24 +47,4 @@ timedatectl set-timezone America/New_York
 
 systemctl reload apache2
 
-# zmeventserver
-apt-get install -y make gcc cpanminus
-
-cpanm install Crypt::MySQL
-cpanm install Config::IniFiles
-cpanm install Crypt::Eksblowfish::Bcrypt
-
-apt-get install -y libyaml-perl
-cpanm install Net::WebSocket::Server
-
-apt-get -y install libjson-perl
-
-cpanm install LWP::Protocol::https
-
-apt-get -y install python3-pip
-
-apt-get -y install python3-opencv
-
-pip3 install future
-
-pip3 install opencv-contrib-python
+systemctl restart apache2

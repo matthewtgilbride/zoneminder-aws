@@ -2,9 +2,10 @@ import { App, Stack, StackProps } from '@aws-cdk/core';
 import { SecurityConstruct } from "./constructs/security.construct";
 import { Vpc } from "@aws-cdk/aws-ec2";
 import { ZoneminderInstanceConstruct } from "./constructs/zoneminder.instance.construct";
+import { StringParameter } from "@aws-cdk/aws-ssm";
 import { AlbConstruct } from "./constructs/alb.construct";
 import { DnsConstruct } from "./constructs/dns.construct";
-import { StringParameter } from "@aws-cdk/aws-ssm";
+import { ParameterSecretConstruct } from "./constructs/parameter-secret.construct";
 
 
 class ZoneminderStack extends Stack {
@@ -26,8 +27,10 @@ class ZoneminderStack extends Stack {
       ec2SecurityGroup,
       sshKeyName: 'zoneminder-ami',
       ebsVolumeSize: 100,
-      domainName,
-      zmUser: 'mtg5014'
+      installEventServer: true,
+      installZoneminder: true,
+      // Ubuntu 18.04
+      ami: 'ami-0ac80df6eff0e70b5'
     })
 
     const { alb } = new AlbConstruct(this, `${id}-alb`, {
@@ -39,6 +42,12 @@ class ZoneminderStack extends Stack {
     new DnsConstruct(this, `${id}-dns`, {
       alb,
       localIp,
+      domainName
+    })
+
+    // store off parameters and secrets we may want to use later
+    new ParameterSecretConstruct(this, `${id}-params-secrets`, {
+      zmUser: 'mtg5014',
       domainName
     })
   }
