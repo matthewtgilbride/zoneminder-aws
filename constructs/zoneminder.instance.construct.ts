@@ -51,7 +51,7 @@ export class ZoneminderInstanceConstruct extends Construct {
     const zmInstall = readFileSync(path.resolve(process.cwd(), 'zminstall.sh'), { encoding: 'utf-8' })
 
     const userData = UserData.forLinux()
-    userData.addCommands('git clone --single-branch --branch v5.15.6 https://github.com/pliablepixels/zmeventnotification.git')
+    userData.addCommands('git clone --single-branch --branch v5.15.6-matthewtgilbride https://github.com/matthewtgilbride/zmeventnotification.git')
     userData.addCommands(zmInstall)
     userData.addCommands(`cd zmeventnotification && INSTALL_YOLOV3=no INSTALL_YOLOV4=no ./install.sh --install-es --install-hook --install-config --no-interactive`)
 
