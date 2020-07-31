@@ -22,4 +22,4 @@ pip3 install opencv-contrib-python
 
 git clone --single-branch --branch v5.15.6-matthewtgilbride https://github.com/matthewtgilbride/zmeventnotification.git
 
-cd zmeventnotification && INSTALL_YOLOV3=no INSTALL_YOLOV4=no ./install.sh --install-es --install-hook --install-config --no-interactive
+cd zmeventnotification && INSTALL_YOLOV4=no ./install.sh --install-es --install-hook --install-config --no-interactive

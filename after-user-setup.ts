@@ -49,14 +49,21 @@ const setConfig = async (URL: string, token: string, key: string, value: string)
   }
 }
 
-const createMonitor = async (URL: string, token: string, monitor: typeof frontMonitor) => {
-  const val =   (key: string, value: any) => ({ [`Monitor[${key}]`]: value })
+const createMonitor = async (URL: string, token: string, domainName: string, monitor: typeof frontMonitor) => {
+  const pathPrefix = `rtsp://camera.zoneminder.${domainName}:`
+  const val =   (key: string, value: any) => {
+    if (!value) { return {} }
+    if (key === 'Path') {
+      return { [`Monitor[${key}]`]: `${pathPrefix}${value}` }
+    }
+    return { [`Monitor[${key}]`]: value }
+  }
 
   try {
     const body = Object.entries(monitor).reduce(
       (result, [key, value]) => ({
         ...result,
-        ...(value ? val(key, value) : {})
+        ...val(key, value)
       }),
       {}
     )
@@ -149,8 +156,8 @@ rl.question('EC2 Hostname: ', host => {
         await setConfig(apiUrl, token, 'ZM_LOG_DEBUG_TARGET', '_zmesdetect|_zmeventnotification')
       }
 
-      await createMonitor(apiUrl, token, frontMonitor)
-      await createMonitor(apiUrl, token, backMonitor)
+      await createMonitor(apiUrl, token, domainName, frontMonitor)
+      await createMonitor(apiUrl, token, domainName, backMonitor)
 
       await createZone(apiUrl, token, frontMonitor, frontZone)
       await createZone(apiUrl, token, backMonitor, backZone)
