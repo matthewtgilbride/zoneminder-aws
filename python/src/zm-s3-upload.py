@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from boto3 import client
+from os import listdir
 import sys
 import traceback
 import logging

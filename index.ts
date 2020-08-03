@@ -29,7 +29,7 @@ class ZoneminderStack extends Stack {
       vpc,
       ec2SecurityGroup,
       sshKeyName: 'zoneminder-ami',
-      ebsVolumeSize: 100,
+      ebsVolumeSize: 10,
       installEventServer: true,
       installZoneminder: true,
       // Ubuntu 18.04
