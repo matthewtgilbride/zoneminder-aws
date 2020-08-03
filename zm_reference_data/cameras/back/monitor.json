@@ -4,7 +4,7 @@
   "ServerId": "0",
   "StorageId": "0",
   "Type": "Ffmpeg",
-  "Function": "Modect",
+  "Function": "Mocord",
   "Enabled": "1",
   "LinkedMonitors": null,
   "Triggers": "",

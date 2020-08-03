@@ -12,6 +12,7 @@ import {
 } from "@aws-cdk/aws-ec2";
 import { readFileSync } from "fs";
 import path from "path";
+import { Role } from "@aws-cdk/aws-iam";
 
 interface ZoneminderInstanceProps {
   vpc: IVpc,
@@ -19,6 +20,7 @@ interface ZoneminderInstanceProps {
   sshKeyName: string,
   ebsVolumeSize: number,
   ami: string;
+  role: Role;
   installZoneminder: boolean;
   installEventServer: boolean;
 }
@@ -34,6 +36,7 @@ export class ZoneminderInstanceConstruct extends Construct {
       ec2SecurityGroup,
       sshKeyName,
       ebsVolumeSize,
+      role,
       ami,
       installZoneminder = true,
       installEventServer = true
@@ -41,6 +44,7 @@ export class ZoneminderInstanceConstruct extends Construct {
     super(scope, `${id}-ZoneminderInstanceConstruct`)
 
     const userData = UserData.forLinux()
+    userData.addCommands('apt-get install awscli -y')
     if (installZoneminder) {
       const zoneminderInstall = readFileSync(path.resolve(process.cwd(), 'zoneminderinstall.sh'), { encoding: 'utf-8' })
       userData.addCommands(zoneminderInstall)
@@ -53,14 +57,16 @@ export class ZoneminderInstanceConstruct extends Construct {
     // ec2 instance
     this.ec2Instance = new Instance(this, 'ZM-ec2-instance', {
       vpc,
-      userData: installZoneminder || installEventServer ? userData : undefined,
+      userData,
+      role,
       machineImage: MachineImage.genericLinux({ 'us-east-1': ami }),
       instanceType: InstanceType.of(InstanceClass.T3A, InstanceSize.MEDIUM),
       availabilityZone: 'us-east-1b',
       keyName: sshKeyName,
       securityGroup: ec2SecurityGroup,
-      blockDevices: [{ deviceName: '/dev/sda1', volume: BlockDeviceVolume.ebs(ebsVolumeSize) }]
+      blockDevices: [{ deviceName: '/dev/sda1', volume: BlockDeviceVolume.ebs(ebsVolumeSize) }],
     })
+
   }
 
 }

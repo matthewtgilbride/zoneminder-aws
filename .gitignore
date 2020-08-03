@@ -7,3 +7,12 @@ node_modules
 .cdk.staging
 cdk.out
 cdk.context.json
+
+python/bin
+python/include
+python/lib
+python/pip-selfcheck.json
+python/pyvenv.cfg
+
+# test events for s3 uploader
+zm_reference_data/events

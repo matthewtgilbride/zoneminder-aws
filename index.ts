@@ -6,6 +6,7 @@ import { StringParameter } from "@aws-cdk/aws-ssm";
 import { AlbConstruct } from "./constructs/alb.construct";
 import { DnsConstruct } from "./constructs/dns.construct";
 import { ParameterSecretConstruct } from "./constructs/parameter-secret.construct";
+import { S3Construct } from "./constructs/s3.construct";
 
 
 class ZoneminderStack extends Stack {
@@ -22,6 +23,8 @@ class ZoneminderStack extends Stack {
       localIp
     })
 
+    const { s3Role } = new S3Construct(this, `${id}-S3`, { domainName })
+
     const { ec2Instance } = new ZoneminderInstanceConstruct(this, `${id}-ec2`, {
       vpc,
       ec2SecurityGroup,
@@ -30,7 +33,8 @@ class ZoneminderStack extends Stack {
       installEventServer: true,
       installZoneminder: true,
       // Ubuntu 18.04
-      ami: 'ami-0ac80df6eff0e70b5'
+      ami: 'ami-0ac80df6eff0e70b5',
+      role: s3Role,
     })
 
     const { alb } = new AlbConstruct(this, `${id}-alb`, {
