@@ -47,4 +47,5 @@ timedatectl set-timezone America/New_York
 
 systemctl reload apache2
 
+systemctl restart mysql
 systemctl restart apache2

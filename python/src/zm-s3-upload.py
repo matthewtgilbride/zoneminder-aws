@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from boto3 import client
 import sys
 import traceback
@@ -9,7 +10,7 @@ def generate_s3_key(monitor, date_time, description):
     date = split[0]
     time = split[1]
     description = description.replace(' ', '')
-    replace_chars_with_dash = [':','[',']', '%']
+    replace_chars_with_dash = [':', '[' ,']', '%']
     for char in replace_chars_with_dash:
         description = description.replace(char, "-")
     if len(description) > 0:
