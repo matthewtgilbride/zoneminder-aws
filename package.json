@@ -8,7 +8,8 @@
     "watch": "tsc -w",
     "synth": "tsc && cdk synth",
     "deploy": "tsc && cdk deploy",
-    "destroy": "tsc && cdk destroy",
+    "destroy": "yarn pre:destroy && tsc && cdk destroy",
+    "pre:destroy": "ts-node cleanup-bucket.ts",
     "post:deploy": "ts-node after-user-setup.ts"
   },
   "author": "",

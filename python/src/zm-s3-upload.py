@@ -16,7 +16,7 @@ def generate_s3_key(monitor, date_time, description):
         description = description.replace(char, "-")
     if len(description) > 0:
         description = '_' + description
-    return f"{date}/{monitor}/{time.replace(':','.')}{description}.avi"
+    return f"{date}/{time.replace(':','.')}_{monitor}{description}.avi"
 
 
 # unused for now - could possibly use ffmpeg in a lambda instead of forcing ZM zerver to do expensive jpg/avi conversion
