@@ -52,7 +52,7 @@
   "PostEventCount": "40",
   "StreamReplayBuffer": "0",
   "AlarmFrameCount": "1",
-  "SectionLength": "600",
+  "SectionLength": "300",
   "MinSectionLength": "10",
   "FrameSkip": "0",
   "MotionFrameSkip": "0",
