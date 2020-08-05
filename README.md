@@ -8,7 +8,7 @@ Some bits are particular to my use case, but most of it can be tweaked and re-us
 You'll need a couple of things from your AWS account before you can get started.
 
 1.  Pick an AWS region where things will run (for me, `us-east-1`)
-2.  An access key, secret key, and AWS account number (I highly recommend following the [security best practices](https://aws.amazon.com/blogs/security/getting-started-follow-security-best-practices-as-you-configure-your-aws-resources/).)
+2.  An access key, secret key, and AWS account number (I highly recommend following the [security best practices](https://aws.amazon.com/blogs/security/getting-started-follow-security-best-practices-as-you-configure-your-aws-resources/)).
 3.  An ssh keypair, in case you need to ssh into the EC2 instance for troubleshooting
 4.  The public IP address where your security cameras live
 
@@ -67,7 +67,7 @@ Create a new filter with the following values checked:
 
 *   Create video for all matches
 *   Execute command on all matches
-    *   In the text box for the command: `/usr/bin/zm-s3-upload.py '%ET%' '%EL%' '%EF%' '%MN%' '%ED%'
+    *   In the text box for the command: `/usr/bin/zm-s3-upload.py '%ET%' '%EL%' '%EF%' '%MN%' '%ED%'`
 *   Run filter in background
 
 Save the filter.
