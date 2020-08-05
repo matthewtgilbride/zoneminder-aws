@@ -11,13 +11,15 @@ def generate_s3_key(monitor, date_time, description):
     date = split[0]
     time = split[1]
     hours, minutes, seconds = time.split(':')
-    description = description.replace(' ', '')
-    replace_chars_with_dash = [':', '[' ,']', '%']
-    for char in replace_chars_with_dash:
-        description = description.replace(char, "-")
+    objects = ['person', 'bicycle', 'car', 'motorbike', 'bus', 'truck', 'dog', 'cat']
+    suffix = ''
     if len(description) > 0:
-        description = '_' + description
-    return f"{date}/{hours}:{minutes}_{monitor}{description}.avi"
+        if description.find('Motion') != -1:
+            suffix += '_Motion'
+        for object in objects:
+            if description.find(object) != -1:
+                suffix += f"-{object}"
+    return f"{date}/{hours}:{minutes}_{monitor}{suffix}.avi"
 
 
 # unused for now - could possibly use ffmpeg in a lambda instead of forcing ZM zerver to do expensive jpg/avi conversion
