@@ -60,7 +60,7 @@ def upload_raw_zm_files(path, monitor, date_time, description):
         file_name = f"{path}/{f}"
         object_name = f"{s3_path}/{f}"
         s3_client.upload_file(file_name, bucket, object_name)
-    s3_client.put_object(description.encode(), bucket, f"{s3_path}/-description.txt")
+    s3_client.put_object(Body=description.encode(), Bucket=bucket, Key=f"{s3_path}/-description.txt")
 
 
 def main(date_time, duration, frames, monitor, description, path):
