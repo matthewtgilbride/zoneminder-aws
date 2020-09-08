@@ -60,10 +60,10 @@ def upload_raw_zm_files(path, monitor, date_time, description):
         file_name = f"{path}/{f}"
         object_name = f"{s3_path}/{f}"
         s3_client.upload_file(file_name, bucket, object_name)
-    s3_client.put_object(Body=description.encode(), Bucket=bucket, Key=f"{s3_path}/-description.txt")
+    s3_client.put_object(Body=description, Bucket=bucket, Key=f"{s3_path}/-description.txt")
 
 
-def main(date_time, duration, frames, monitor, description, path):
+def main(date_time, monitor, description, path):
     logging.basicConfig(filename='/var/log/zm/s3-upload.log', level=logging.INFO)
     logging.info(f"Starting S3 Upload: {path}")
     try:
@@ -76,4 +76,4 @@ def main(date_time, duration, frames, monitor, description, path):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])

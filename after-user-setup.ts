@@ -144,8 +144,8 @@ rl.question('EC2 Hostname: ', host => {
 
       // s3 upload script
       await shell(`ssh ubuntu@${host} "sudo -H pip3 install boto3"`)
-      await shell(`scp ./python/src/zm-s3-upload.py ubuntu@${host}:`)
-      await shell(`ssh ubuntu@${host} "sudo chmod a+x zm-s3-upload.py && sudo chown www-data:www-data zm-s3-upload.py && sudo mv zm-s3-upload.py /usr/bin"`)
+      await shell(`scp ./zm-s3-upload.js ubuntu@${host}:`)
+      await shell(`ssh ubuntu@${host} "sudo chmod a+x zm-s3-upload.js && sudo chown www-data:www-data zm-s3-upload.js && sudo mv zm-s3-upload.js /usr/bin"`)
 
       let token = await getToken(apiUrl, zmUser, zmPassword)
       await setConfig(apiUrl,token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
