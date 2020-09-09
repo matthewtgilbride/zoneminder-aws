@@ -1,6 +1,8 @@
 #!/usr/bin/node
 import { S3 } from "aws-sdk";
 import fs from 'fs';
+import { ManagedUpload } from "aws-sdk/lib/s3/managed_upload";
+import SendData = ManagedUpload.SendData;
 
 const generateS3Path = (monitor: string, dateTime: string): string => {
   const [date, time] = dateTime.split(' ')
@@ -25,17 +27,47 @@ const generateS3Suffix = (description: string): string => {
   return suffix
 }
 
-const errorHandler = (err: Error) => console.error(err.message)
-const successHandler = () => console.log(`upload: ${Date.now()}`)
+interface Manifest {
+  expected: number;
+  received: number;
+  converted: boolean;
+  description: string;
+  path: string;
+  captureKeys: string[]
+}
+
+const errorHandler = (err: Error) => {
+  console.error(`ERROR: ${err.message}`)
+}
+
+const successHandler = (data: SendData) => {
+  console.log(`COMPLETED: ${data.Key}`)
+}
 
 const uploadRawZmFiles = (dateTime: string, monitor: string, description: string, path: string) => {
-  console.log(`start: ${Date.now()}`);
   const s3 = new S3()
   const files = fs.readdirSync(path)
-  const s3Folder = `${generateS3Path(monitor, dateTime)}${generateS3Suffix(description)}`
+  const s3Path = `${generateS3Path(monitor, dateTime)}${generateS3Suffix(description)}/`
+
+  let manifest: Manifest = {
+    expected: files.length + 1,
+    received: 0,
+    converted: false,
+    description,
+    path: s3Path,
+    captureKeys: []
+  };
+
   files.forEach(file => {
+
     const fileBlob = fs.readFileSync(`${path}/${file}`);
-    const objectName = `${s3Folder}/${file}`
+    const objectName = `${s3Path}${file}`
+
+    manifest.received += 1;
+    if (file.endsWith('capture.jpg')) {
+      manifest.captureKeys.push(objectName);
+    }
+
     s3.upload({
       Bucket: 'zoneminder.mattgilbride.com',
       Body: fileBlob,
@@ -45,14 +77,15 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
       .then(successHandler)
       .catch(errorHandler)
   })
+  manifest.received += 1;
   s3.upload({
     Bucket: 'zoneminder.mattgilbride.com',
-    Body: description,
-    Key: `${s3Folder}/-description.txt`
+    Body: JSON.stringify(manifest, null, 2),
+    Key: `${s3Path}-manifest.json`
   })
     .promise()
-    .catch(errorHandler)
     .then(successHandler)
+    .catch(errorHandler)
 }
 
 const main = () => {
