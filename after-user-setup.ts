@@ -143,7 +143,9 @@ rl.question('EC2 Hostname: ', host => {
       await shell(`ssh ubuntu@${host} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
 
       // s3 upload script
-      await shell(`ssh ubuntu@${host} "sudo -H pip3 install boto3"`)
+      await shell(`ssh ubuntu@${host} "sudo apt-get update"`)
+      await shell(`ssh ubuntu@${host} "sudo curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -"`)
+      await shell(`ssh ubuntu@${host} "sudo cd /usr/bin && sudo npm install aws-sdk"`)
       await shell(`scp ./zm-s3-upload.js ubuntu@${host}:`)
       await shell(`ssh ubuntu@${host} "sudo chmod a+x zm-s3-upload.js && sudo chown www-data:www-data zm-s3-upload.js && sudo mv zm-s3-upload.js /usr/bin"`)
 

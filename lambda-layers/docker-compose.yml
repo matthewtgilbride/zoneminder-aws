@@ -1,0 +1,8 @@
+version: '3'
+services:
+  python:
+    build: ./python
+    stdin_open: true # docker run -i
+    tty: true # docker run -t
+    container_name: lambda-layer-python
+

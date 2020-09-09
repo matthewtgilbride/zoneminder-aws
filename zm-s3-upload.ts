@@ -8,6 +8,23 @@ const generateS3Path = (monitor: string, dateTime: string): string => {
   return `${date}/${hours}:${minutes}_${monitor}`
 }
 
+const objects = ['person', 'bicycle', 'car', 'motorbike', 'bus', 'truck', 'dog', 'cat']
+
+const generateS3Suffix = (description: string): string => {
+  let suffix = ''
+  if (description && description.length) {
+    if (description.search('Motion') > -1) {
+      suffix += '_Motion'
+    }
+    objects.forEach(object => {
+      if (description.search(object) > -1) {
+        suffix += `-${object}`
+      }
+    })
+  }
+  return suffix
+}
+
 const errorHandler = (err: Error) => console.error(err.message)
 const successHandler = () => console.log(`upload: ${Date.now()}`)
 
@@ -15,9 +32,10 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
   console.log(`start: ${Date.now()}`);
   const s3 = new S3()
   const files = fs.readdirSync(path)
+  const s3Folder = `${generateS3Path(monitor, dateTime)}${generateS3Suffix(description)}`
   files.forEach(file => {
     const fileBlob = fs.readFileSync(`${path}/${file}`);
-    const objectName = `${generateS3Path(monitor, dateTime)}/${file}`
+    const objectName = `${s3Folder}/${file}`
     s3.upload({
       Bucket: 'zoneminder.mattgilbride.com',
       Body: fileBlob,
@@ -30,7 +48,7 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
   s3.upload({
     Bucket: 'zoneminder.mattgilbride.com',
     Body: description,
-    Key: `${generateS3Path(monitor, dateTime)}/-description.txt`
+    Key: `${s3Folder}/-description.txt`
   })
     .promise()
     .catch(errorHandler)
