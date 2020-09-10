@@ -65,8 +65,10 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
 
     manifest.received += 1;
     if (file.endsWith('capture.jpg')) {
-      objectName = `${s3Path}/frames/${file}`
+      objectName = `${s3Path}frames/${file}`
       manifest.frames.push(objectName);
+    } else if (file.endsWith('analyze.jpg')) {
+      objectName = `${s3Path}motion/${file}`
     }
 
     s3.upload({
