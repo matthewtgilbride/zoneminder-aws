@@ -27,13 +27,13 @@ const generateS3Suffix = (description: string): string => {
   return suffix
 }
 
-interface Manifest {
+export interface Manifest {
   expected: number;
   received: number;
   converted: boolean;
   description: string;
   path: string;
-  captureKeys: string[]
+  frames: string[]
 }
 
 const errorHandler = (err: Error) => {
@@ -55,17 +55,18 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
     converted: false,
     description,
     path: s3Path,
-    captureKeys: []
+    frames: []
   };
 
   files.forEach(file => {
 
     const fileBlob = fs.readFileSync(`${path}/${file}`);
-    const objectName = `${s3Path}${file}`
+    let objectName = `${s3Path}${file}`
 
     manifest.received += 1;
     if (file.endsWith('capture.jpg')) {
-      manifest.captureKeys.push(objectName);
+      objectName = `${s3Path}/frames/${file}`
+      manifest.frames.push(objectName);
     }
 
     s3.upload({
@@ -77,7 +78,9 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
       .then(successHandler)
       .catch(errorHandler)
   })
+
   manifest.received += 1;
+
   s3.upload({
     Bucket: 'zoneminder.mattgilbride.com',
     Body: JSON.stringify(manifest, null, 2),
