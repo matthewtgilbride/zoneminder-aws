@@ -86,7 +86,7 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
   s3.upload({
     Bucket: 'zoneminder.mattgilbride.com',
     Body: JSON.stringify(manifest, null, 2),
-    Key: `${s3Path}-manifest.json`
+    Key: `${s3Path}manifest.json`
   })
     .promise()
     .then(successHandler)
