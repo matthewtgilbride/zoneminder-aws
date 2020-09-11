@@ -4,6 +4,9 @@ import fs from 'fs';
 import { ManagedUpload } from "aws-sdk/lib/s3/managed_upload";
 import SendData = ManagedUpload.SendData;
 
+//TODO: parameterize
+const Bucket = 'zoneminder.mattgilbride.com'
+
 const generateS3Path = (monitor: string, dateTime: string): string => {
   const [date, time] = dateTime.split(' ')
   const [hours, minutes] = time.split(':')
@@ -65,7 +68,7 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
     }
 
     s3.upload({
-      Bucket: 'zoneminder.mattgilbride.com',
+      Bucket,
       Body: fileBlob,
       Key: objectName
     })
@@ -77,7 +80,7 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
   manifest.received += 1;
 
   s3.upload({
-    Bucket: 'zoneminder.mattgilbride.com',
+    Bucket,
     Body: JSON.stringify(manifest, null, 2),
     Key: `${s3Path}manifest.json`
   })

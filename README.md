@@ -51,23 +51,22 @@ I have a utility script that automates the process of configuration, monitor, an
 that can back up video files to the created S3 bucket, update some configuration, and create two monitors and two zones.  **Before you run it**:
 
 *   Note that the config files it uses are quite specific to my setup, but you can use them as inspiration.
-*   The script it runs is [after-user-setup.ts](./after-user-setup.ts), and it reads values from [zm_reference_data/cameras](./zm_reference_data/cameras)
+*   The script it runs is [after-user-setup.ts](scripts/after-user-setup.ts), and it reads values from [zm_reference_data/cameras](./zm_reference_data/cameras)
 *   LOOK AT THESE FILES FIRST.
 
 To run it: `yarn post:deploy`
     
 ## Manual Zoneminder settings (part 2)
 
-The script outlined above puts the python file `zm-s3-upload.py` into the `/usr/bin` directory of the EC2 instance.
+The script outlined above puts the python file `zm-s3-upload.js` into the `/usr/bin` directory of the EC2 instance.
 You can use this to back up videos to S3 by setting up a filter in Zoneminder.
 
 `<your-host>/zm/index.php??view=filter`
 
 Create a new filter with the following values checked:
 
-*   Create video for all matches
 *   Execute command on all matches
-    *   In the text box for the command: `/usr/bin/zm-s3-upload.py '%ET%' '%EL%' '%EF%' '%MN%' '%ED%'`
+    *   In the text box for the command: `/usr/bin/zm-s3-upload.js '%ET%' '%MN%' '%ED%'`
 *   Run filter in background
 
 Save the filter.

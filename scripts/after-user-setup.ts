@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { createInterface } from 'readline'
 import { stringify } from 'querystring'
-import frontMonitor from './zm_reference_data/cameras/front/monitor.json'
-import backMonitor from './zm_reference_data/cameras/back/monitor.json'
-import frontZone from './zm_reference_data/cameras/front/zone.json'
-import backZone from './zm_reference_data/cameras/back/zone.json'
+import frontMonitor from '../zm_reference_data/cameras/front/monitor.json'
+import backMonitor from '../zm_reference_data/cameras/back/monitor.json'
+import frontZone from '../zm_reference_data/cameras/front/zone.json'
+import backZone from '../zm_reference_data/cameras/back/zone.json'
 import { SecretsManager, SSM } from "aws-sdk";
 import { promisify } from "util";
 import { exec } from "child_process";
@@ -143,10 +143,7 @@ rl.question('EC2 Hostname: ', host => {
       await shell(`ssh ubuntu@${host} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
 
       // s3 upload script
-      await shell(`ssh ubuntu@${host} "sudo apt-get update"`)
-      await shell(`ssh ubuntu@${host} "sudo curl -sL https://deb.nodesource.com/setup_14.x | sudo bash -"`)
-      await shell(`ssh ubuntu@${host} "sudo cd /usr/bin && sudo npm install aws-sdk"`)
-      await shell(`scp ./zm-s3-upload.js ubuntu@${host}:`)
+      await shell(`scp ./scripts/zm-s3-upload.js ubuntu@${host}:`)
       await shell(`ssh ubuntu@${host} "sudo chmod a+x zm-s3-upload.js && sudo chown www-data:www-data zm-s3-upload.js && sudo mv zm-s3-upload.js /usr/bin"`)
 
       let token = await getToken(apiUrl, zmUser, zmPassword)
@@ -196,7 +193,9 @@ ZMES_PICTURE_URL=${portalUrl}/index.php?view=image&eid=EVENTID&fid=objdetect&wid
 ZM_USER=${zmUser}
 ZM_PASSWORD=${zmPassword}
 ZM_PORTAL=${portalUrl}
-ZM_API_PORTAL=${portalUrl}/api`
+ZM_API_PORTAL=${portalUrl}/api
+ES_CERT_FILE=/etc/letsencrypt/live/zoneminder.${domainName}/fullchain.pem
+ES_KEY_FILE=/etc/letsencrypt/live/zoneminder.${domainName}/privkey.pem`
 
 }
 

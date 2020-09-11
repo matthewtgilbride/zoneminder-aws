@@ -22,7 +22,9 @@ interface ZoneminderInstanceProps {
   ami: string;
   role: Role;
   installZoneminder: boolean;
+  installCert: boolean;
   installEventServer: boolean;
+  installNodeAws: boolean;
 }
 
 export class ZoneminderInstanceConstruct extends Construct {
@@ -39,19 +41,29 @@ export class ZoneminderInstanceConstruct extends Construct {
       role,
       ami,
       installZoneminder = true,
-      installEventServer = true
+      installCert = true,
+      installEventServer = true,
+      installNodeAws = true
     }: ZoneminderInstanceProps) {
     super(scope, `${id}-ZoneminderInstanceConstruct`)
 
     const userData = UserData.forLinux()
     userData.addCommands('apt-get install awscli -y')
     if (installZoneminder) {
-      const zoneminderInstall = readFileSync(path.resolve(process.cwd(), 'zoneminderinstall.sh'), { encoding: 'utf-8' })
+      const zoneminderInstall = readFileSync(path.resolve(process.cwd(), 'install/zoneminderinstall.sh'), { encoding: 'utf-8' })
       userData.addCommands(zoneminderInstall)
     }
+    if (installCert) {
+      const certInstall = readFileSync(path.resolve(process.cwd(), 'install/sslcertinstall.sh'), { encoding: 'utf-8' })
+      userData.addCommands(certInstall)
+    }
     if (installEventServer) {
-      const zmeventserverInstall = readFileSync(path.resolve(process.cwd(), 'zmeventserverinstall.sh'), { encoding: 'utf-8' })
+      const zmeventserverInstall = readFileSync(path.resolve(process.cwd(), 'install/zmeventserverinstall.sh'), { encoding: 'utf-8' })
       userData.addCommands(zmeventserverInstall)
+    }
+    if (installNodeAws) {
+      const nodeInstall = readFileSync(path.resolve(process.cwd(), 'install/nodeawsinstall.sh'), { encoding: 'utf-8' })
+      userData.addCommands(nodeInstall)
     }
 
     // ec2 instance
