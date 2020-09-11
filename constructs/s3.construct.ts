@@ -14,7 +14,10 @@ export class S3Construct extends Construct {
 
     this.s3Role = new Role(scope, `${id}-S3Role`, {
       assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
-      managedPolicies: [ManagedPolicy.fromManagedPolicyArn(scope, `${id}-S3ManagedPolicy`, 'arn:aws:iam::aws:policy/AmazonS3FullAccess')],
+      managedPolicies: [
+        ManagedPolicy.fromManagedPolicyArn(scope, `${id}-S3ManagedPolicy`, 'arn:aws:iam::aws:policy/AmazonS3FullAccess'),
+        ManagedPolicy.fromManagedPolicyArn(scope, `${id}-Route53ManagedPolicy`, 'arn:aws:iam::aws:policy/AmazonRoute53FullAccess'),
+      ],
       roleName: 'ZM-S3FullAccessRole'
     })
 

@@ -8,7 +8,7 @@
     "watch": "tsc -w",
     "synth": "tsc && cdk synth",
     "deploy": "tsc && cdk deploy",
-    "destroy": "yarn pre:destroy && tsc && cdk destroy",
+    "destroy": "tsc && yarn pre:destroy && cdk destroy",
     "pre:destroy": "node scripts/cleanup-bucket.js",
     "post:deploy": "node scripts/after-user-setup.js"
   },
