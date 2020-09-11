@@ -30,10 +30,8 @@ const generateS3Suffix = (description: string): string => {
 export interface Manifest {
   expected: number;
   received: number;
-  converted: boolean;
   description: string;
   path: string;
-  frames: string[]
 }
 
 const errorHandler = (err: Error) => {
@@ -52,10 +50,8 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
   let manifest: Manifest = {
     expected: files.length + 1,
     received: 0,
-    converted: false,
     description,
     path: s3Path,
-    frames: []
   };
 
   files.forEach(file => {
@@ -64,11 +60,8 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
     let objectName = `${s3Path}${file}`
 
     manifest.received += 1;
-    if (file.endsWith('capture.jpg')) {
-      objectName = `${s3Path}frames/${file}`
-      manifest.frames.push(objectName);
-    } else if (file.endsWith('analyze.jpg')) {
-      objectName = `${s3Path}motion/${file}`
+    if (file.endsWith('analyse.jpg')) {
+      objectName = `${s3Path}alarm-frames/${file}`
     }
 
     s3.upload({

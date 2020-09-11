@@ -1,4 +1,0 @@
-boto3==1.14.33
-botocore==1.17.33
-numpy==1.19.1
-opencv-python==4.4.0.42

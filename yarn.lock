@@ -306,11 +306,6 @@
   resolved "https://registry.yarnpkg.com/@aws-cdk/region-info/-/region-info-1.55.0.tgz#963bacb8c96eced6fe8c607b3dee7a3085aa02ee"
   integrity sha512-SYHSb4/pqokjZIuf7WIncy4IkWbAasAtqe/lsGT+GML6lgH0A2sSMMg9H4tPh1ovxvDGSGhE4FJrMyRVtAbmeQ==
 
-"@types/aws-lambda@^8.10.62":
-  version "8.10.62"
-  resolved "https://registry.yarnpkg.com/@types/aws-lambda/-/aws-lambda-8.10.62.tgz#857de3f73ab503136f2eefe965b1b67e5f397b62"
-  integrity sha512-43XhJY5jvyH03U0cRsSqeHWhvmGZNoLzTPSAZ3JAqgG9p20uw+Sx9Auk5OAefJajd9ZcfjDJ/9lJ2BiBxfKJRw==
-
 "@types/color-name@^1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@types/color-name/-/color-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"

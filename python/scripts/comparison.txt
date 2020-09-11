@@ -1,5 +1,0 @@
-in python 5 to 6 minutes
-
-ffmpeg about a minute
-
-
