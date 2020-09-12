@@ -1,0 +1,1 @@
+/usr/bin/zm-s3-upload.js '%ET%' '%MN%' '%ED%'

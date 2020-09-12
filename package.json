@@ -8,9 +8,9 @@
     "watch": "tsc -w",
     "synth": "tsc && cdk synth",
     "deploy": "tsc && cdk deploy",
-    "destroy": "yarn pre:destroy && tsc && cdk destroy",
-    "pre:destroy": "ts-node cleanup-bucket.ts",
-    "post:deploy": "ts-node after-user-setup.ts"
+    "destroy": "tsc && yarn pre:destroy && cdk destroy",
+    "pre:destroy": "node scripts/cleanup-bucket.js",
+    "post:deploy": "node scripts/after-user-setup.js"
   },
   "author": "",
   "license": "ISC",
@@ -29,7 +29,6 @@
     "aws-cdk": "^1.55.0",
     "aws-sdk": "^2.723.0",
     "axios": "^0.19.2",
-    "ts-node": "^8.10.2",
     "typescript": "3.9.7"
   }
 }

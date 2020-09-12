@@ -3,7 +3,6 @@ import { SecurityConstruct } from "./constructs/security.construct";
 import { Vpc } from "@aws-cdk/aws-ec2";
 import { ZoneminderInstanceConstruct } from "./constructs/zoneminder.instance.construct";
 import { StringParameter } from "@aws-cdk/aws-ssm";
-import { AlbConstruct } from "./constructs/alb.construct";
 import { DnsConstruct } from "./constructs/dns.construct";
 import { ParameterSecretConstruct } from "./constructs/parameter-secret.construct";
 import { S3Construct } from "./constructs/s3.construct";
@@ -18,7 +17,7 @@ class ZoneminderStack extends Stack {
 
     const domainName = StringParameter.valueFromLookup(this, 'domainName')
 
-    const { ec2SecurityGroup, loadBalancerSecurityGroup } = new SecurityConstruct(this, `${id}-security`, {
+    const { ec2SecurityGroup } = new SecurityConstruct(this, `${id}-security`, {
       vpc,
       localIp
     })
@@ -32,21 +31,17 @@ class ZoneminderStack extends Stack {
       ebsVolumeSize: 10,
       installEventServer: true,
       installZoneminder: true,
+      installNodeAws: true,
+      installCert: true,
       // Ubuntu 18.04
       ami: 'ami-0ac80df6eff0e70b5',
       role: s3Role,
     })
 
-    const { alb } = new AlbConstruct(this, `${id}-alb`, {
-      vpc,
-      loadBalancerSecurityGroup,
-      ec2Instance
-    })
-
     new DnsConstruct(this, `${id}-dns`, {
-      alb,
       localIp,
-      domainName
+      domainName,
+      instance: ec2Instance
     })
 
     // store off parameters and secrets we may want to use later

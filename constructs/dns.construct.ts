@@ -1,16 +1,16 @@
 import { Construct, Duration } from "@aws-cdk/core";
 import { HostedZone, RecordSet, RecordTarget, RecordType } from "@aws-cdk/aws-route53";
-import { ApplicationLoadBalancer } from "@aws-cdk/aws-elasticloadbalancingv2";
+import { Instance } from "@aws-cdk/aws-ec2";
 
 export interface DnsConstructProps {
-  alb: ApplicationLoadBalancer,
+  instance: Instance
   localIp: string,
   domainName: string,
 }
 
 export class DnsConstruct extends Construct {
 
-  constructor(scope: Construct, id: string, { alb, localIp, domainName }: DnsConstructProps) {
+  constructor(scope: Construct, id: string, { instance, localIp, domainName }: DnsConstructProps) {
     super(scope, id);
 
 
@@ -24,7 +24,7 @@ export class DnsConstruct extends Construct {
       recordType: RecordType.CNAME,
       // todo: make longer once stable
       ttl: Duration.seconds(60),
-      target: RecordTarget.fromValues(alb.loadBalancerDnsName)
+      target: RecordTarget.fromValues(instance.instancePublicDnsName)
     })
 
     // cameras to local IP

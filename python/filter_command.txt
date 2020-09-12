@@ -1,1 +1,0 @@
-/usr/bin/zm-s3-upload.py '%ET%' '%EL%' '%EF%' '%MN%' '%ED%'
