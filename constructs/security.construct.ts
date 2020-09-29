@@ -14,7 +14,7 @@ export class SecurityConstruct extends Construct {
 
     // load balancer security group
     this.ec2SecurityGroup = new SecurityGroup(this, 'ZM-lb-sg', {
-      securityGroupName: 'zoneminder ec2 instance sg',
+      securityGroupName: `${id} zoneminder ec2 instance sg`,
       vpc
     })
 

@@ -16,6 +16,7 @@ import { Role } from "@aws-cdk/aws-iam";
 
 interface ZoneminderInstanceProps {
   vpc: IVpc,
+  domainName: string,
   ec2SecurityGroup: SecurityGroup,
   sshKeyName: string,
   ebsVolumeSize: number,
@@ -25,6 +26,7 @@ interface ZoneminderInstanceProps {
   installCert: boolean;
   installEventServer: boolean;
   installNodeAws: boolean;
+  installCwAgent: boolean;
 }
 
 export class ZoneminderInstanceConstruct extends Construct {
@@ -35,6 +37,7 @@ export class ZoneminderInstanceConstruct extends Construct {
     id: string,
     {
       vpc,
+      domainName,
       ec2SecurityGroup,
       sshKeyName,
       ebsVolumeSize,
@@ -43,12 +46,15 @@ export class ZoneminderInstanceConstruct extends Construct {
       installZoneminder = true,
       installCert = true,
       installEventServer = true,
-      installNodeAws = true
+      installNodeAws = true,
+      installCwAgent = true,
     }: ZoneminderInstanceProps) {
     super(scope, `${id}-ZoneminderInstanceConstruct`)
 
     const userData = UserData.forLinux()
     userData.addCommands('apt-get install awscli -y')
+    userData.addCommands(`export DOMAIN_NAME=${domainName}`)
+    userData.addCommands(`echo "export DOMAIN_NAME=${domainName}" > /etc/profile.d/domain_name.sh`)
     if (installZoneminder) {
       const zoneminderInstall = readFileSync(path.resolve(process.cwd(), 'install/zoneminderinstall.sh'), { encoding: 'utf-8' })
       userData.addCommands(zoneminderInstall)
@@ -64,6 +70,14 @@ export class ZoneminderInstanceConstruct extends Construct {
     if (installNodeAws) {
       const nodeInstall = readFileSync(path.resolve(process.cwd(), 'install/nodeawsinstall.sh'), { encoding: 'utf-8' })
       userData.addCommands(nodeInstall)
+    }
+    if (installCwAgent) {
+      const agentInstall = readFileSync(path.resolve(process.cwd(), 'install/cwagent/cwagentinstall.sh'), { encoding: 'utf-8' })
+      userData.addCommands(agentInstall)
+      const agentConfig = readFileSync(path.resolve(process.cwd(), 'install/cwagent/config.json'), { encoding: 'utf-8' })
+      userData.addCommands(`echo '${agentConfig}' > /opt/aws/amazon-cloudwatch-agent/bin/config.json`)
+      const agentRun = readFileSync(path.resolve(process.cwd(), 'install/cwagent/runcwagent.sh'), { encoding: 'utf-8' })
+      userData.addCommands(agentRun)
     }
 
     // ec2 instance

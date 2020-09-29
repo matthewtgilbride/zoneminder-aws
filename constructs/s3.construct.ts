@@ -17,8 +17,9 @@ export class S3Construct extends Construct {
       managedPolicies: [
         ManagedPolicy.fromManagedPolicyArn(scope, `${id}-S3ManagedPolicy`, 'arn:aws:iam::aws:policy/AmazonS3FullAccess'),
         ManagedPolicy.fromManagedPolicyArn(scope, `${id}-Route53ManagedPolicy`, 'arn:aws:iam::aws:policy/AmazonRoute53FullAccess'),
+        ManagedPolicy.fromManagedPolicyArn(scope, `${id}-CloudWatchManagedPolicy`, 'arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy'),
       ],
-      roleName: 'ZM-S3FullAccessRole'
+      roleName: `ZM-${domainName}-role`
     })
 
     new Bucket(

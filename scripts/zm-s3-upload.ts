@@ -4,8 +4,7 @@ import fs from 'fs';
 import { ManagedUpload } from "aws-sdk/lib/s3/managed_upload";
 import SendData = ManagedUpload.SendData;
 
-//TODO: parameterize
-const Bucket = 'zoneminder.mattgilbride.com'
+const Bucket = process.env.DOMAIN_NAME ?? 'zoneminder.mattgilbride.com'
 
 const generateS3Path = (monitor: string, dateTime: string): string => {
   const [date, time] = dateTime.split(' ')
