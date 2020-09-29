@@ -34,7 +34,7 @@ class ZoneminderStack extends Stack {
       ebsVolumeSize: 10,
       installEventServer: true,
       installZoneminder: true,
-      installNodeAws: true,
+      installS3Backup: true,
       installCert: true,
       installCwAgent: true,
       // Ubuntu 18.04
@@ -60,12 +60,12 @@ class ZoneminderStack extends Stack {
 }
 
 const app = new App()
-new ZoneminderStack(app, 'zmtest3', {
+new ZoneminderStack(app, 'zmtest', {
   env: {
     region: process.env.AWS_DEFAULT_REGION,
     account: process.env.AWS_ACCOUNT_NUMBER,
   },
-}, 'zmtest3');
+}, 'zmtest');
 
 
 

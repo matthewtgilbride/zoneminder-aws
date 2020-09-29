@@ -142,10 +142,6 @@ rl.question('EC2 Hostname: ', host => {
 
       await shell(`ssh ubuntu@${host} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
 
-      // s3 upload script
-      await shell(`scp ./scripts/zm-s3-upload.js ubuntu@${host}:`)
-      await shell(`ssh ubuntu@${host} "sudo chmod a+x zm-s3-upload.js && sudo chown www-data:www-data zm-s3-upload.js && sudo mv zm-s3-upload.js /usr/bin"`)
-
       let token = await getToken(apiUrl, zmUser, zmPassword)
       await setConfig(apiUrl,token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
       const secret = Math.random().toString(36).substring(7);

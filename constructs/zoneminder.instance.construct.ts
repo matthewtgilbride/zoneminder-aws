@@ -25,7 +25,7 @@ interface ZoneminderInstanceProps {
   installZoneminder: boolean;
   installCert: boolean;
   installEventServer: boolean;
-  installNodeAws: boolean;
+  installS3Backup: boolean;
   installCwAgent: boolean;
 }
 
@@ -46,7 +46,7 @@ export class ZoneminderInstanceConstruct extends Construct {
       installZoneminder = true,
       installCert = true,
       installEventServer = true,
-      installNodeAws = true,
+      installS3Backup = true,
       installCwAgent = true,
     }: ZoneminderInstanceProps) {
     super(scope, `${id}-ZoneminderInstanceConstruct`)
@@ -56,27 +56,31 @@ export class ZoneminderInstanceConstruct extends Construct {
     userData.addCommands(`export DOMAIN_NAME=${domainName}`)
     userData.addCommands(`echo "export DOMAIN_NAME=${domainName}" > /etc/profile.d/domain_name.sh`)
     if (installZoneminder) {
-      const zoneminderInstall = readFileSync(path.resolve(process.cwd(), 'install/zoneminderinstall.sh'), { encoding: 'utf-8' })
+      const zoneminderInstall = readFileSync(path.resolve(process.cwd(), 'install/zoneminder.sh'), { encoding: 'utf-8' })
       userData.addCommands(zoneminderInstall)
     }
     if (installCert) {
-      const certInstall = readFileSync(path.resolve(process.cwd(), 'install/sslcertinstall.sh'), { encoding: 'utf-8' })
+      const certInstall = readFileSync(path.resolve(process.cwd(), 'install/sslcert.sh'), { encoding: 'utf-8' })
       userData.addCommands(certInstall)
     }
     if (installEventServer) {
-      const zmeventserverInstall = readFileSync(path.resolve(process.cwd(), 'install/zmeventserverinstall.sh'), { encoding: 'utf-8' })
+      const zmeventserverInstall = readFileSync(path.resolve(process.cwd(), 'install/zmeventserver.sh'), { encoding: 'utf-8' })
       userData.addCommands(zmeventserverInstall)
     }
-    if (installNodeAws) {
-      const nodeInstall = readFileSync(path.resolve(process.cwd(), 'install/nodeawsinstall.sh'), { encoding: 'utf-8' })
+    if (installS3Backup) {
+      const nodeInstall = readFileSync(path.resolve(process.cwd(), 'install/node_aws_sdk.sh'), { encoding: 'utf-8' })
       userData.addCommands(nodeInstall)
+      const backupScript = readFileSync(path.resolve(process.cwd(), 'scripts/zm-s3-upload.js'), { encoding: 'utf-8' }).replace(/'/g, `"`)
+      userData.addCommands(`echo '${backupScript}' > /usr/bin/zm-s3-upload.js`)
+      userData.addCommands('chown www-data:www-data /usr/bin/zm-s3-upload.js')
+      userData.addCommands('chmod u+x /usr/bin/zm-s3-upload.js')
     }
     if (installCwAgent) {
-      const agentInstall = readFileSync(path.resolve(process.cwd(), 'install/cwagent/cwagentinstall.sh'), { encoding: 'utf-8' })
+      const agentInstall = readFileSync(path.resolve(process.cwd(), 'install/cwagent/cwagent_install.sh'), { encoding: 'utf-8' })
       userData.addCommands(agentInstall)
       const agentConfig = readFileSync(path.resolve(process.cwd(), 'install/cwagent/config.json'), { encoding: 'utf-8' })
       userData.addCommands(`echo '${agentConfig}' > /opt/aws/amazon-cloudwatch-agent/bin/config.json`)
-      const agentRun = readFileSync(path.resolve(process.cwd(), 'install/cwagent/runcwagent.sh'), { encoding: 'utf-8' })
+      const agentRun = readFileSync(path.resolve(process.cwd(), 'install/cwagent/cwagent_run.sh'), { encoding: 'utf-8' })
       userData.addCommands(agentRun)
     }
 
