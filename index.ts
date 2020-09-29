@@ -9,26 +9,26 @@ import { S3Construct } from "./constructs/s3.construct";
 
 
 class ZoneminderStack extends Stack {
-  constructor(scope: App, id: string, props?: StackProps, testDomainPrefix?: string) {
+  constructor(scope: App, id: string, props?: StackProps) {
     super(scope, id, props);
 
     const vpc = Vpc.fromLookup(this, "ZM-vpc", { isDefault: true });
     const localIp = process.env.LOCAL_IP as string;
 
     const domainName = StringParameter.valueFromLookup(this, 'domainName')
-
-    const dn = testDomainPrefix ? `${testDomainPrefix}.${domainName}` : domainName
+    const stackName = id;
+    const fullyQualifiedDomainName = `${id}.${domainName}`
 
     const { ec2SecurityGroup } = new SecurityConstruct(this, `${id}-security`, {
       vpc,
       localIp
     })
 
-    const { s3Role } = new S3Construct(this, `${id}-S3`, { domainName: dn })
+    const { s3Role } = new S3Construct(this, `${id}-S3`, { fullyQualifiedDomainName })
 
     const { ec2Instance } = new ZoneminderInstanceConstruct(this, `${id}-ec2`, {
       vpc,
-      domainName: dn,
+      fullyQualifiedDomainName,
       ec2SecurityGroup,
       sshKeyName: 'zoneminder-ami',
       ebsVolumeSize: 10,
@@ -45,17 +45,16 @@ class ZoneminderStack extends Stack {
     new DnsConstruct(this, `${id}-dns`, {
       localIp,
       domainName,
-      domainPrefix: testDomainPrefix,
+      stackName,
       instance: ec2Instance
     })
 
     // store off parameters and secrets we may want to use later
-    if (!testDomainPrefix) {
-      new ParameterSecretConstruct(this, `${id}-params-secrets`, {
-        zmUser: 'mtg5014',
-        domainName
-      })
-    }
+    new ParameterSecretConstruct(this, `${id}-params-secrets`, {
+      zmUser: 'mtg5014',
+      domainName,
+      stackName,
+    })
   }
 }
 
@@ -65,7 +64,7 @@ new ZoneminderStack(app, 'zmtest', {
     region: process.env.AWS_DEFAULT_REGION,
     account: process.env.AWS_ACCOUNT_NUMBER,
   },
-}, 'zmtest');
+});
 
 
 

@@ -6,12 +6,12 @@ export interface DnsConstructProps {
   instance: Instance
   localIp: string,
   domainName: string,
-  domainPrefix?: string,
+  stackName: string,
 }
 
 export class DnsConstruct extends Construct {
 
-  constructor(scope: Construct, id: string, { instance, localIp, domainName, domainPrefix }: DnsConstructProps) {
+  constructor(scope: Construct, id: string, { instance, localIp, domainName, stackName }: DnsConstructProps) {
     super(scope, id);
 
 
@@ -19,11 +19,11 @@ export class DnsConstruct extends Construct {
       domainName,
     })
 
-    const dn = domainPrefix ? `${domainPrefix}.${domainName}` : domainName
+    const dn = `${stackName}.${domainName}`
 
     new RecordSet(this, 'ZM-rs', {
       zone,
-      recordName: `zoneminder.${dn}`,
+      recordName: dn,
       recordType: RecordType.CNAME,
       // todo: make longer once stable
       ttl: Duration.seconds(60),
@@ -33,7 +33,7 @@ export class DnsConstruct extends Construct {
     // cameras to local IP
     new RecordSet(this, 'ZM-rs-cameras', {
       zone,
-      recordName: `camera.zoneminder.${dn}`,
+      recordName: `camera.${dn}`,
       recordType: RecordType.CNAME,
       // todo: make longer once stable
       ttl: Duration.seconds(60),

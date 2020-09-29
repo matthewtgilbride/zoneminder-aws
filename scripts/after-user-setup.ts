@@ -118,29 +118,31 @@ const rl = createInterface({
   output: process.stdout
 })
 
-rl.question('EC2 Hostname: ', host => {
-  rl.question('debug event server? (y/n): ', async debug => {
+rl.question('Stack Name (default: zoneminder): ', stackName => {
+  rl.question('debug event server? (y/n default: n): ', async debug => {
     try {
       const ssm = new SSM()
       const secretsManager = new SecretsManager()
 
-      const zmUserParameter = await ssm.getParameter({ Name: 'zmUser' }).promise()
+      const zmUserParameter = await ssm.getParameter({ Name: `${stackName}User` }).promise()
       const zmUser = zmUserParameter.Parameter?.Value as string
 
-      const zmApiUrlParameter = await ssm.getParameter({ Name: 'zmApiUrl' }).promise()
+      const zmApiUrlParameter = await ssm.getParameter({ Name: `${stackName}ApiUrl` }).promise()
       const apiUrl = zmApiUrlParameter.Parameter?.Value as string
 
       const domainNameParameter = await ssm.getParameter({ Name: 'domainName' }).promise()
       const domainName = domainNameParameter.Parameter?.Value as string
 
-      const zmPasswordSecret = await secretsManager.getSecretValue({ SecretId: 'zmPassword' }).promise()
+      const fullyQualifiedDomainName = `${stackName ?? 'zoneminder'}.${domainName}`
+
+      const zmPasswordSecret = await secretsManager.getSecretValue({ SecretId: `${stackName}Password` }).promise()
       const zmPassword = zmPasswordSecret.SecretString as string
 
-      const iniString = secretsIni({ domainName, zmUser, zmPassword })
+      const iniString = secretsIni({ fullyQualifiedDomainName, zmUser, zmPassword })
 
       const shell = promisify(exec)
 
-      await shell(`ssh ubuntu@${host} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
+      await shell(`ssh ubuntu@${stackName} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
 
       let token = await getToken(apiUrl, zmUser, zmPassword)
       await setConfig(apiUrl,token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
@@ -151,7 +153,7 @@ rl.question('EC2 Hostname: ', host => {
       await setConfig(apiUrl, token, 'ZM_AUTH_HASH_LOGINS', '1')
       await setConfig(apiUrl, token, 'ZM_TIMEZONE', 'America/New_York')
 
-      if (debug === 'y') {
+      if (debug !== 'n') {
         await setConfig(apiUrl, token, 'ZM_LOG_DEBUG', '1')
         await setConfig(apiUrl, token, 'ZM_LOG_DEBUG_TARGET', '_zmesdetect|_zmeventnotification')
       }
@@ -175,14 +177,14 @@ rl.question('EC2 Hostname: ', host => {
 })
 
 interface SecretsIniProps {
-  domainName: string,
+  fullyQualifiedDomainName: string,
   zmUser: string,
   zmPassword: string,
 }
 
-function secretsIni({ domainName, zmUser, zmPassword }: SecretsIniProps) {
+function secretsIni({ fullyQualifiedDomainName, zmUser, zmPassword }: SecretsIniProps) {
 
-  const portalUrl = `https://zoneminder.${domainName}/zm`
+  const portalUrl = `https://${fullyQualifiedDomainName}/zm`
 
   return `[secrets]
 ZMES_PICTURE_URL=${portalUrl}/index.php?view=image&eid=EVENTID&fid=objdetect&width=600
@@ -190,8 +192,8 @@ ZM_USER=${zmUser}
 ZM_PASSWORD=${zmPassword}
 ZM_PORTAL=${portalUrl}
 ZM_API_PORTAL=${portalUrl}/api
-ES_CERT_FILE=/etc/letsencrypt/live/zoneminder.${domainName}/fullchain.pem
-ES_KEY_FILE=/etc/letsencrypt/live/zoneminder.${domainName}/privkey.pem`
+ES_CERT_FILE=/etc/letsencrypt/live/${fullyQualifiedDomainName}/fullchain.pem
+ES_KEY_FILE=/etc/letsencrypt/live/${fullyQualifiedDomainName}/privkey.pem`
 
 }
 

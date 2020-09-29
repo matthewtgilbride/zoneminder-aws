@@ -4,23 +4,23 @@ import { AccountPrincipal } from "@aws-cdk/aws-iam";
 import { Construct } from "@aws-cdk/core";
 
 export interface ParameterSecretProps {
-  zmUser: string, domainName: string
+  zmUser: string, domainName: string, stackName: string
 }
 
 export class ParameterSecretConstruct extends Construct {
-  constructor(scope: Construct, id: string, { zmUser, domainName }: ParameterSecretProps) {
+  constructor(scope: Construct, id: string, { zmUser, domainName, stackName }: ParameterSecretProps) {
     super(scope, id)
     new StringParameter(this, 'zmUser', {
-      parameterName: 'zmUser',
+      parameterName: `${stackName}User`,
       stringValue: zmUser
     })
     new StringParameter(this, 'zmApiUrl', {
-      parameterName: 'zmApiUrl',
-      stringValue: `https://zoneminder.${domainName}/zm/api`
+      parameterName: `${stackName}ApiUrl`,
+      stringValue: `https://${stackName}.${domainName}/zm/api`
     })
 
     const secret = new Secret(this, 'zmPassword', {
-      secretName: 'zmPassword',
+      secretName: `${stackName}Password`,
       generateSecretString: {
         excludePunctuation: true
       }

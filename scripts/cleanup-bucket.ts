@@ -12,9 +12,9 @@ export const cleanupBucket = async () => {
   const domainNameParameter = await ssm.getParameter({ Name: 'domainName' }).promise()
   const domainName = domainNameParameter.Parameter?.Value as string
 
-  rl.question('Bucket prefix (enter text, just enter to skip)? ', async prefix => {
+  rl.question('Stack Name (default: zoneminder): ', async stackName => {
 
-    const bucketName = `zoneminder.${prefix ? `${prefix}.` : ''}${domainName}`;
+    const bucketName = `${stackName ? `${stackName}.` : 'zoneminder.'}${domainName}`;
     const params = { Bucket: bucketName }
     rl.question(
       `Are you SURE you want to delete the contents of ${bucketName}? (y/n): `,
