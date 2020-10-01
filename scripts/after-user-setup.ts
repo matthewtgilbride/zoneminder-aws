@@ -142,36 +142,42 @@ rl.question('Stack Name (default: zoneminder): ', stackName => {
 
       const shell = promisify(exec)
 
-      await shell(`ssh ubuntu@${stackName} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
+      rl.question(`go to https://${fullyQualifiedDomainName}/zm/?view=options&tab=users, update ${zmUser}'s password, delete the admin user, and press enter when done.`, async () => {
+        try {
+          await shell(`ssh ubuntu@${fullyQualifiedDomainName} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
 
-      let token = await getToken(apiUrl, zmUser, zmPassword)
-      await setConfig(apiUrl,token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
-      const secret = Math.random().toString(36).substring(7);
-      await setConfig(apiUrl, token, 'ZM_AUTH_HASH_SECRET', secret)
-      await setConfig(apiUrl, token, 'ZM_OPT_USE_AUTH', '1')
-      token = await getToken(apiUrl, zmUser, zmPassword)
-      await setConfig(apiUrl, token, 'ZM_AUTH_HASH_LOGINS', '1')
-      await setConfig(apiUrl, token, 'ZM_TIMEZONE', 'America/New_York')
+          let token = await getToken(apiUrl, zmUser, zmPassword)
+          await setConfig(apiUrl,token, 'ZM_OPT_USE_EVENTNOTIFICATION', '1')
+          const secret = Math.random().toString(36).substring(7);
+          await setConfig(apiUrl, token, 'ZM_AUTH_HASH_SECRET', secret)
+          await setConfig(apiUrl, token, 'ZM_OPT_USE_AUTH', '1')
+          token = await getToken(apiUrl, zmUser, zmPassword)
+          await setConfig(apiUrl, token, 'ZM_AUTH_HASH_LOGINS', '1')
+          await setConfig(apiUrl, token, 'ZM_TIMEZONE', 'America/New_York')
 
-      if (debug !== 'n') {
-        await setConfig(apiUrl, token, 'ZM_LOG_DEBUG', '1')
-        await setConfig(apiUrl, token, 'ZM_LOG_DEBUG_TARGET', '_zmesdetect|_zmeventnotification')
-      }
+          if (debug !== 'n') {
+            await setConfig(apiUrl, token, 'ZM_LOG_DEBUG', '1')
+            await setConfig(apiUrl, token, 'ZM_LOG_DEBUG_TARGET', '_zmesdetect|_zmeventnotification')
+          }
 
-      await createMonitor(apiUrl, token, domainName, frontMonitor)
-      await createMonitor(apiUrl, token, domainName, backMonitor)
+          await createMonitor(apiUrl, token, domainName, frontMonitor)
+          await createMonitor(apiUrl, token, domainName, backMonitor)
 
-      await createZone(apiUrl, token, frontMonitor, frontZone)
-      await createZone(apiUrl, token, backMonitor, backZone)
+          await createZone(apiUrl, token, frontMonitor, frontZone)
+          await createZone(apiUrl, token, backMonitor, backZone)
 
-      await axios.post(
-        `${apiUrl}/states/change/restart.json?token=${token}`
-      )
+          await axios.post(
+            `${apiUrl}/states/change/restart.json?token=${token}`
+          )
+        } finally {
+          rl.close()
+        }
+      })
+
     } catch (e) {
       console.error(e)
-      throw e
-    } finally {
       rl.close()
+      throw e
     }
   })
 })

@@ -22,11 +22,12 @@ interface ZoneminderInstanceProps {
   ebsVolumeSize: number,
   ami: string;
   role: Role;
-  installZoneminder: boolean;
-  installCert: boolean;
-  installEventServer: boolean;
-  installS3Backup: boolean;
-  installCwAgent: boolean;
+  installZoneminder?: boolean;
+  installCert?: boolean;
+  installEventServer?: boolean;
+  installS3Backup?: boolean;
+  installCwAgent?: boolean;
+  zmUser: string;
 }
 
 export class ZoneminderInstanceConstruct extends Construct {
@@ -48,16 +49,28 @@ export class ZoneminderInstanceConstruct extends Construct {
       installEventServer = true,
       installS3Backup = true,
       installCwAgent = true,
+      zmUser,
     }: ZoneminderInstanceProps) {
     super(scope, `${id}-ZoneminderInstanceConstruct`)
 
     const userData = UserData.forLinux()
     userData.addCommands('apt-get install awscli -y')
+
     userData.addCommands(`export DOMAIN_NAME=${fullyQualifiedDomainName}`)
     userData.addCommands(`echo "export DOMAIN_NAME=${fullyQualifiedDomainName}" > /etc/profile.d/domain_name.sh`)
+    userData.addCommands('chmod a+x /etc/profile.d/domain_name.sh')
+
+    userData.addCommands(`export ZM_USER=${zmUser}`)
+    userData.addCommands(`echo "export ZM_USER=${zmUser}" > /etc/profile.d/zm_user.sh`)
+    userData.addCommands('chmod a+x /etc/profile.d/zm_user.sh')
+
     if (installZoneminder) {
       const zoneminderInstall = readFileSync(path.resolve(process.cwd(), 'install/zoneminder.sh'), { encoding: 'utf-8' })
       userData.addCommands(zoneminderInstall)
+      const insertUser = readFileSync(path.resolve(process.cwd(), 'install/insert_user.sh'), { encoding: 'utf-8' })
+      userData.addCommands(insertUser)
+      userData.addCommands(`echo "export DOMAIN_NAME=${fullyQualifiedDomainName}" >> /etc/apache2/envvars`)
+      userData.addCommands('systemctl restart apache2')
     }
     if (installCert) {
       const certInstall = readFileSync(path.resolve(process.cwd(), 'install/sslcert.sh'), { encoding: 'utf-8' })

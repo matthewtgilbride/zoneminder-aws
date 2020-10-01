@@ -9,8 +9,8 @@
     "synth": "tsc && cdk synth",
     "deploy": "tsc && cdk deploy",
     "destroy": "tsc && yarn pre:destroy && cdk destroy",
-    "pre:destroy": "node scripts/cleanup-bucket.js",
-    "post:deploy": "node scripts/after-user-setup.js"
+    "pre:destroy": "tsc && node scripts/cleanup-bucket.js",
+    "post:deploy": "tsc && node scripts/after-user-setup.js"
   },
   "author": "",
   "license": "ISC",

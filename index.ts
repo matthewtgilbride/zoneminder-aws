@@ -26,6 +26,8 @@ class ZoneminderStack extends Stack {
 
     const { s3Role } = new S3Construct(this, `${id}-S3`, { fullyQualifiedDomainName })
 
+    const zmUser = 'mtg5014'
+
     const { ec2Instance } = new ZoneminderInstanceConstruct(this, `${id}-ec2`, {
       vpc,
       fullyQualifiedDomainName,
@@ -40,6 +42,7 @@ class ZoneminderStack extends Stack {
       // Ubuntu 18.04
       ami: 'ami-0ac80df6eff0e70b5',
       role: s3Role,
+      zmUser
     })
 
     new DnsConstruct(this, `${id}-dns`, {
@@ -51,7 +54,7 @@ class ZoneminderStack extends Stack {
 
     // store off parameters and secrets we may want to use later
     new ParameterSecretConstruct(this, `${id}-params-secrets`, {
-      zmUser: 'mtg5014',
+      zmUser,
       domainName,
       stackName,
     })
@@ -59,7 +62,7 @@ class ZoneminderStack extends Stack {
 }
 
 const app = new App()
-new ZoneminderStack(app, 'zmtest', {
+new ZoneminderStack(app, 'zmtest5', {
   env: {
     region: process.env.AWS_DEFAULT_REGION,
     account: process.env.AWS_ACCOUNT_NUMBER,

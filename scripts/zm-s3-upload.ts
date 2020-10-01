@@ -4,7 +4,7 @@ import fs from 'fs';
 import { ManagedUpload } from "aws-sdk/lib/s3/managed_upload";
 import SendData = ManagedUpload.SendData;
 
-const Bucket = process.env.DOMAIN_NAME ?? 'zoneminder.mattgilbride.com'
+const Bucket = process.env.DOMAIN_NAME as string
 
 const generateS3Path = (monitor: string, dateTime: string): string => {
   const [date, time] = dateTime.split(' ')
@@ -89,6 +89,12 @@ const uploadRawZmFiles = (dateTime: string, monitor: string, description: string
 }
 
 const main = () => {
+  if (!process.env.DOMAIN_NAME) throw new Error( `
+  no DOMAIN_NAME environment variable:
+  
+    ${process.env}
+    
+  `)
   const args = process.argv.slice(2) as [string, string, string, string]
   uploadRawZmFiles(...args)
 }
