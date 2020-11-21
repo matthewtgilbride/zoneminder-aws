@@ -33,22 +33,14 @@ Run the following at the root of the project:
 `yarn deploy`
 
 You should end up with a stack created, and be able to access Zoneminder at `https://zoneminder.yourdomain.com/zm`
-
-## Manual Zoneminder settings (part 1)
-
-The FIRST thing you need to do is log into the Zoneminder console and manually configure a user via the UI:
-
-`<your-host>/zm/index.php?view=options&tab=users`
-
-1.  Create a user with the `zmUser` user name that was created in SSM Parameter store, and the `zmPassword` password
-that was created in Secrets Manager (look them up in the [AWS Console](http://console.aws.amazon.com)).
-Give them the maximum permissions (e.g. "Edit" for all options) and make sure to select "Yes" for API Enabled.
-2.  Delete the default admin user
     
-## Automated settings, monitor, and zone setup
+## Automated user, settings, monitor, and zone setup
     
-I have a utility script that automates the process of configuration, monitor, and zone setup for me.  It will upload a python script
-that can back up video files to the created S3 bucket, update some configuration, and create two monitors and two zones.  **Before you run it**:
+I have a utility script that automates the process of configuration, monitor, and zone setup for me.  
+It will first prompt you to manually update the user's password with the value from secrets manager.  
+Then it will upload a python script that can back up video files to the created S3 bucket, update some configuration, and create two monitors and two zones.  
+
+**Before you run it**:
 
 *   Note that the config files it uses are quite specific to my setup, but you can use them as inspiration.
 *   The script it runs is [after-user-setup.ts](scripts/after-user-setup.ts), and it reads values from [zm_reference_data/cameras](./zm_reference_data/cameras)
@@ -56,7 +48,7 @@ that can back up video files to the created S3 bucket, update some configuration
 
 To run it: `yarn post:deploy`
     
-## Manual Zoneminder settings (part 2)
+## Manual Zoneminder settings
 
 The script outlined above puts the python file `zm-s3-upload.js` into the `/usr/bin` directory of the EC2 instance.
 You can use this to back up videos to S3 by setting up a filter in Zoneminder.

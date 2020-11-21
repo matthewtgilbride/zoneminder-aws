@@ -7,6 +7,3 @@ apt-get install python3-certbot-dns-route53 -y
 apt-get install certbot python-certbot-apache -y
 certbot certonly -d $DOMAIN_NAME --non-interactive --agree-tos --email mtg5014@gmail.com --dns-route53
 certbot -d $DOMAIN_NAME --non-interactive --agree-tos --apache --redirect --hsts
-chown -R www-data:root /etc/letsencrypt/
-
-

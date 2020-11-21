@@ -29,7 +29,7 @@ export class S3Construct extends Construct {
         bucketName: fullyQualifiedDomainName,
         removalPolicy: RemovalPolicy.DESTROY,
         lifecycleRules: [{
-          expiration: Duration.days(30)
+          expiration: Duration.days(14)
         }]
       }
     )

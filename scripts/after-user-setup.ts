@@ -142,7 +142,7 @@ rl.question('Stack Name (default: zoneminder): ', stackName => {
 
       const shell = promisify(exec)
 
-      rl.question(`go to https://${fullyQualifiedDomainName}/zm/?view=options&tab=users, update ${zmUser}'s password, delete the admin user, and press enter when done.`, async () => {
+      rl.question(`go to https://${fullyQualifiedDomainName}/zm/?view=options&tab=users, update ${zmUser}'s password to: ${zmPassword} :, delete the admin user, and press enter when done.`, async () => {
         try {
           await shell(`ssh ubuntu@${fullyQualifiedDomainName} "echo '${iniString}' > secrets.ini && sudo mv secrets.ini /etc/zm && sudo chown www-data:www-data /etc/zm/secrets.ini"`)
 
@@ -198,8 +198,8 @@ ZM_USER=${zmUser}
 ZM_PASSWORD=${zmPassword}
 ZM_PORTAL=${portalUrl}
 ZM_API_PORTAL=${portalUrl}/api
-ES_CERT_FILE=/etc/letsencrypt/live/${fullyQualifiedDomainName}/fullchain.pem
-ES_KEY_FILE=/etc/letsencrypt/live/${fullyQualifiedDomainName}/privkey.pem`
+ES_CERT_FILE=/etc/zm/ssl/zoneminder.crt
+ES_KEY_FILE=/etc/zm/ssl/zoneminder.key`
 
 }
 

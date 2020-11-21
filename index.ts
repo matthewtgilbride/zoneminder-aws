@@ -12,23 +12,23 @@ class ZoneminderStack extends Stack {
   constructor(scope: App, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const vpc = Vpc.fromLookup(this, "ZM-vpc", { isDefault: true });
+    const vpc = Vpc.fromLookup(this, "ZM-vpc", {isDefault: true});
     const localIp = process.env.LOCAL_IP as string;
 
     const domainName = StringParameter.valueFromLookup(this, 'domainName')
     const stackName = id;
     const fullyQualifiedDomainName = `${id}.${domainName}`
 
-    const { ec2SecurityGroup } = new SecurityConstruct(this, `${id}-security`, {
+    const {ec2SecurityGroup} = new SecurityConstruct(this, `${id}-security`, {
       vpc,
       localIp
     })
 
-    const { s3Role } = new S3Construct(this, `${id}-S3`, { fullyQualifiedDomainName })
+    const {s3Role} = new S3Construct(this, `${id}-S3`, {fullyQualifiedDomainName})
 
     const zmUser = 'mtg5014'
 
-    const { ec2Instance } = new ZoneminderInstanceConstruct(this, `${id}-ec2`, {
+    const {ec2Instance} = new ZoneminderInstanceConstruct(this, `${id}-ec2`, {
       vpc,
       fullyQualifiedDomainName,
       ec2SecurityGroup,

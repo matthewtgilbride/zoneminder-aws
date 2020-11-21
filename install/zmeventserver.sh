@@ -20,6 +20,14 @@ pip3 install future
 
 pip3 install opencv-contrib-python
 
-git clone --single-branch --branch v5.15.6-matthewtgilbride https://github.com/matthewtgilbride/zmeventnotification.git
+mkdir /etc/zm/ssl
+
+openssl req -x509 -nodes -days 4096 -newkey rsa:2048 -keyout /etc/zm/ssl/zoneminder.key -out /etc/zm/ssl/zoneminder.crt \
+  -subj "/C=US/ST=Pennsylvania/L=Philadelphia/O=Matt Gilbride/OU=Zoneminder/CN=$DOMAIN_NAME"
+
+chown www-data /etc/zm/ssl/zoneminder.crt
+chown www-data /etc/zm/ssl/zoneminder.key
+
+git clone --single-branch --branch v6.0.6-matthewtgilbride https://github.com/matthewtgilbride/zmeventnotification.git
 
 cd zmeventnotification && INSTALL_YOLOV4=no ./install.sh --install-es --install-hook --install-config --no-interactive
