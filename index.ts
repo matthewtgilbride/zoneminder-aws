@@ -62,7 +62,7 @@ class ZoneminderStack extends Stack {
 }
 
 const app = new App()
-new ZoneminderStack(app, 'zmtest5', {
+new ZoneminderStack(app, 'zoneminder', {
   env: {
     region: process.env.AWS_DEFAULT_REGION,
     account: process.env.AWS_ACCOUNT_NUMBER,
