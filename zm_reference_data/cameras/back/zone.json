@@ -7,7 +7,7 @@
   "Area": "1675168",
   "AlarmRGB": "16711680",
   "CheckMethod": "Blobs",
-  "MinPixelThreshold": "20",
+  "MinPixelThreshold": "35",
   "MaxPixelThreshold": null,
   "MinAlarmPixels": "134013",
   "MaxAlarmPixels": null,
