@@ -58,7 +58,7 @@ You can use this to back up videos to S3 by setting up a filter in Zoneminder.
 Create a new filter with the following values checked:
 
 *   Execute command on all matches
-    *   In the text box for the command: `/usr/bin/zm-s3-upload.js '%ET%' '%MN%' '%ED%'`
+*   In the text box for the command: `. /etc/profile.d/domain_name.sh && /usr/bin/zm-s3-upload.js '%ET%' '%MN%' '%ED%'`
 *   Run filter in background
 
 Save the filter.

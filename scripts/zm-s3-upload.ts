@@ -92,7 +92,7 @@ const main = () => {
   if (!process.env.DOMAIN_NAME) throw new Error( `
   no DOMAIN_NAME environment variable:
   
-    ${process.env}
+      ${JSON.stringify(process.env)}
     
   `)
   const args = process.argv.slice(2) as [string, string, string, string]
